@@ -86,7 +86,8 @@ export const Architecture = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const particles = [...Array(30)].map((_, i) => ({
