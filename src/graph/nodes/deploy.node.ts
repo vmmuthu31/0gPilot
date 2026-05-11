@@ -1,4 +1,4 @@
-import { computeService } from "@/services/compute.service";
+import { deployAgent } from "@/agents/deploy.agent";
 
 import { WorkflowState } from "../state";
 
@@ -8,39 +8,13 @@ export async function deployNode(
   try {
     console.log("Executing Deployment Node...");
 
-    const result = await computeService.chat(
-      [
-        {
-          role: "system",
-          content: `
-You are a blockchain DevOps engineer.
+    const result = await deployAgent.execute({
+      prompt: state.prompt,
 
-Generate:
-- Hardhat deployment scripts
-- RPC configuration
-- deployment steps
-- environment variables
-- verification commands
+      architecture: state.architecture,
 
-Return markdown + code.
-`,
-        },
-
-        {
-          role: "user",
-          content: `
-Project:
-${state.prompt}
-
-Contracts:
-${state.contracts}
-`,
-        },
-      ],
-      {
-        temperature: 0.3,
-      },
-    );
+      contracts: state.contracts,
+    });
 
     if (!result.success) {
       return {
@@ -51,7 +25,7 @@ ${state.contracts}
     }
 
     return {
-      deployment: result.content || "",
+      deployment: result.deployment || "",
 
       status: "Deployment Generated",
     };

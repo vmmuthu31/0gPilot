@@ -1,5 +1,12 @@
 import { computeService } from "@/services/compute.service";
 
+import {
+  PLANNER_DATABASE_DESIGN_SYSTEM_PROMPT,
+  PLANNER_FOLDER_STRUCTURE_SYSTEM_PROMPT,
+  PLANNER_STRUCTURED_PLAN_SYSTEM_PROMPT,
+  PLANNER_SYSTEM_PROMPT,
+} from "@/prompts/planner.prompt";
+
 export interface PlannerAgentInput {
   prompt: string;
 }
@@ -14,62 +21,6 @@ export interface PlannerAgentResult {
   error?: string;
 }
 
-const SYSTEM_PROMPT = `
-You are a senior AI Web3 systems architect.
-
-Your job is to analyze startup ideas and generate a complete technical architecture.
-
-You specialize in:
-- Web3 applications
-- AI infrastructure
-- autonomous agents
-- smart contracts
-- decentralized storage
-- deployment systems
-- scalable backend systems
-
-You must generate:
-
-# Required Sections
-
-1. Project Overview
-2. Frontend Architecture
-3. Backend Architecture
-4. Smart Contract Architecture
-5. AI Agent Architecture
-6. Database / Storage Layer
-7. APIs & Services
-8. Security Architecture
-9. Deployment Flow
-10. Recommended Tech Stack
-11. Folder Structure
-12. Scalability Considerations
-
-# Important Rules
-
-- Use modern production-grade stack
-- Prefer TypeScript ecosystem
-- Use decentralized infrastructure where possible
-- Optimize for scalability
-- Optimize for security
-- Optimize for modularity
-- Optimize for AI orchestration
-- Use clean markdown formatting
-- Be technically detailed
-
-# Special Requirements
-
-Always include:
-- LangGraph orchestration
-- 0G Compute
-- 0G Storage
-- 0G Chain
-- AI agents
-- deployment architecture
-
-Return detailed markdown only.
-`;
-
 class PlannerAgent {
   async execute(input: PlannerAgentInput): Promise<PlannerAgentResult> {
     try {
@@ -77,7 +28,7 @@ class PlannerAgent {
         [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: PLANNER_SYSTEM_PROMPT,
           },
 
           {
@@ -130,33 +81,7 @@ ${input.prompt}
         [
           {
             role: "system",
-            content: `
-You are an AI autonomous project planner.
-
-Analyze the startup idea and return structured JSON.
-
-Required JSON structure:
-
-{
-  "project_name": "",
-  "frontend": {
-    "framework": "",
-    "libraries": []
-  },
-  "backend": {
-    "framework": "",
-    "services": []
-  },
-  "smart_contracts": [],
-  "agents": [],
-  "storage": [],
-  "deployment": [],
-  "security": [],
-  "features": []
-}
-
-Return ONLY JSON.
-`,
+            content: PLANNER_STRUCTURED_PLAN_SYSTEM_PROMPT,
           },
 
           {
@@ -190,19 +115,7 @@ Return ONLY JSON.
         [
           {
             role: "system",
-            content: `
-You are a senior software architect.
-
-Generate:
-- scalable folder structure
-- modular architecture
-- frontend folders
-- backend folders
-- AI agent folders
-- LangGraph folders
-
-Use clean tree formatting.
-`,
+            content: PLANNER_FOLDER_STRUCTURE_SYSTEM_PROMPT,
           },
 
           {
@@ -234,23 +147,7 @@ Use clean tree formatting.
         [
           {
             role: "system",
-            content: `
-You are a database architect.
-
-Generate:
-- schemas
-- collections
-- relationships
-- vector memory design
-- decentralized storage strategy
-- caching strategy
-
-Focus on:
-- AI memory
-- scalable systems
-- decentralized storage
-- Web3 architecture
-`,
+            content: PLANNER_DATABASE_DESIGN_SYSTEM_PROMPT,
           },
 
           {

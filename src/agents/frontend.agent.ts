@@ -1,5 +1,7 @@
 import { computeService } from "@/services/compute.service";
 
+import { FRONTEND_SYSTEM_PROMPT } from "@/prompts/frontend.prompt";
+
 export interface FrontendAgentInput {
   prompt: string;
 
@@ -16,36 +18,6 @@ export interface FrontendAgentResult {
   error?: string;
 }
 
-const SYSTEM_PROMPT = `
-You are a world-class frontend engineer.
-
-Stack:
-- Next.js App Router
-- TypeScript
-- TailwindCSS
-- Framer Motion
-- shadcn/ui
-
-Requirements:
-- futuristic design
-- responsive
-- production-ready
-- clean architecture
-- modular components
-- scalable folder structure
-- beautiful animations
-- dark mode optimized
-
-Generate:
-- pages
-- layouts
-- sections
-- reusable components
-- Tailwind styling
-
-Return ONLY code.
-`;
-
 class FrontendAgent {
   async execute(input: FrontendAgentInput): Promise<FrontendAgentResult> {
     try {
@@ -53,7 +25,7 @@ class FrontendAgent {
         [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: FRONTEND_SYSTEM_PROMPT,
           },
 
           {

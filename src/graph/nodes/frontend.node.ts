@@ -1,4 +1,4 @@
-import { computeService } from "@/services/compute.service";
+import { frontendAgent } from "@/agents/frontend.agent";
 
 import { WorkflowState } from "../state";
 
@@ -8,45 +8,11 @@ export async function frontendNode(
   try {
     console.log("Executing Frontend Node...");
 
-    const result = await computeService.chat(
-      [
-        {
-          role: "system",
-          content: `
-You are a senior frontend engineer.
+    const result = await frontendAgent.execute({
+      prompt: state.prompt,
 
-Stack:
-- Next.js
-- TailwindCSS
-- Framer Motion
-- shadcn/ui
-
-Requirements:
-- futuristic UI
-- responsive
-- modular
-- production ready
-
-Return ONLY code.
-`,
-        },
-
-        {
-          role: "user",
-          content: `
-Project:
-${state.prompt}
-
-Architecture:
-${state.architecture}
-`,
-        },
-      ],
-      {
-        temperature: 0.7,
-        max_tokens: 5000,
-      },
-    );
+      architecture: state.architecture,
+    });
 
     if (!result.success) {
       return {
@@ -57,7 +23,7 @@ ${state.architecture}
     }
 
     return {
-      frontend: result.content || "",
+      frontend: result.code || "",
 
       status: "Frontend Generated",
     };

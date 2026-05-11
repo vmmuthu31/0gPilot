@@ -1,4 +1,4 @@
-import { computeService } from "@/services/compute.service";
+import { auditAgent } from "@/agents/audit.agent";
 import { WorkflowState } from "../state";
 
 export async function auditNode(
@@ -7,38 +7,9 @@ export async function auditNode(
   try {
     console.log("Executing Audit Node...");
 
-    const result = await computeService.chat(
-      [
-        {
-          role: "system",
-          content: `
-You are a Solidity smart contract auditor.
-
-Analyze:
-- vulnerabilities
-- reentrancy
-- gas optimization
-- overflow
-- access control
-- attack vectors
-
-Return:
-1. Vulnerabilities
-2. Severity
-3. Fixes
-4. Security Score
-`,
-        },
-
-        {
-          role: "user",
-          content: state.contracts || "",
-        },
-      ],
-      {
-        temperature: 0.2,
-      },
-    );
+    const result = await auditAgent.execute({
+      contracts: state.contracts || "",
+    });
 
     if (!result.success) {
       return {
@@ -49,7 +20,7 @@ Return:
     }
 
     return {
-      audit: result.content || "",
+      audit: result.report || "",
 
       status: "Audit Completed",
     };

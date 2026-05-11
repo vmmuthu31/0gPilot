@@ -1,4 +1,4 @@
-import { computeService } from "@/services/compute.service";
+import { contractAgent } from "@/agents/contract.agent";
 import { WorkflowState } from "../state";
 
 export async function contractNode(
@@ -7,41 +7,11 @@ export async function contractNode(
   try {
     console.log("Executing Contract Node...");
 
-    const result = await computeService.chat(
-      [
-        {
-          role: "system",
-          content: `
-You are a senior Solidity engineer.
+    const result = await contractAgent.execute({
+      prompt: state.prompt,
 
-Requirements:
-- Solidity ^0.8.20
-- OpenZeppelin
-- secure
-- gas optimized
-- modular
-- production ready
-
-Return ONLY Solidity code.
-`,
-        },
-
-        {
-          role: "user",
-          content: `
-Project:
-${state.prompt}
-
-Architecture:
-${state.architecture}
-`,
-        },
-      ],
-      {
-        temperature: 0.3,
-        max_tokens: 5000,
-      },
-    );
+      architecture: state.architecture,
+    });
 
     if (!result.success) {
       return {
@@ -52,7 +22,7 @@ ${state.architecture}
     }
 
     return {
-      contracts: result.content || "",
+      contracts: result.contracts || "",
 
       status: "Contracts Generated",
     };

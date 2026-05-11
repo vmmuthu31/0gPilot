@@ -1,5 +1,7 @@
 import { computeService } from "@/services/compute.service";
 
+import { CONTRACT_SYSTEM_PROMPT } from "@/prompts/contract.prompt";
+
 export interface ContractAgentInput {
   prompt: string;
 
@@ -16,35 +18,6 @@ export interface ContractAgentResult {
   error?: string;
 }
 
-const SYSTEM_PROMPT = `
-You are a senior Solidity engineer.
-
-Requirements:
-- Solidity ^0.8.20
-- OpenZeppelin
-- gas optimized
-- secure
-- modular
-- production-ready
-
-Security Requirements:
-- ReentrancyGuard
-- Ownable
-- AccessControl
-- Pausable
-- overflow protection
-
-Generate:
-- smart contracts
-- interfaces
-- deployment-ready code
-- events
-- modifiers
-- comments
-
-Return ONLY Solidity code.
-`;
-
 class ContractAgent {
   async execute(input: ContractAgentInput): Promise<ContractAgentResult> {
     try {
@@ -52,7 +25,7 @@ class ContractAgent {
         [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: CONTRACT_SYSTEM_PROMPT,
           },
 
           {

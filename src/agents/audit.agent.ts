@@ -1,5 +1,7 @@
 import { computeService } from "@/services/compute.service";
 
+import { AUDIT_SYSTEM_PROMPT } from "@/prompts/audit.prompt";
+
 export interface AuditAgentInput {
   contracts: string;
 }
@@ -14,29 +16,6 @@ export interface AuditAgentResult {
   error?: string;
 }
 
-const SYSTEM_PROMPT = `
-You are a professional Solidity smart contract auditor.
-
-Analyze:
-- reentrancy vulnerabilities
-- overflow issues
-- access control issues
-- tx.origin misuse
-- gas inefficiencies
-- logic flaws
-- unsafe external calls
-- attack vectors
-
-Return:
-1. Vulnerabilities
-2. Severity
-3. Risk Analysis
-4. Recommended Fixes
-5. Security Score
-
-Use clean markdown formatting.
-`;
-
 class AuditAgent {
   async execute(input: AuditAgentInput): Promise<AuditAgentResult> {
     try {
@@ -44,7 +23,7 @@ class AuditAgent {
         [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: AUDIT_SYSTEM_PROMPT,
           },
 
           {
