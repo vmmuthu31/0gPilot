@@ -11,7 +11,6 @@ import {
   Paperclip, 
   Maximize2, 
   Send,
-  MoreHorizontal
 } from "lucide-react";
 
 const agents = [
@@ -57,7 +56,6 @@ export const AgentDashboard = () => {
   const [prompt, setPrompt] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const fullPrompt = "Create an NFT marketplace with royalties, advanced search, and wallet integration.";
 
   useEffect(() => {
     const stepInterval = setInterval(() => {
