@@ -1,6 +1,5 @@
 import { Layers } from "lucide-react";
-import { Disc } from "lucide-react";
-import { FaGithub, FaTwitter, FaYoutube } from "react-icons/fa";
+import { FaDiscord, FaGithub, FaTwitter, FaYoutube } from "react-icons/fa";
 
 export const Footer = () => (
   <footer className="bg-[var(--background)] pt-16 pb-8 relative z-10">
@@ -23,7 +22,7 @@ export const Footer = () => (
           </p>
           <div className="flex items-center gap-4 text-[var(--text-secondary)]">
             <FaTwitter className="w-5 h-5 hover:text-white cursor-pointer transition-colors" />
-            <Disc className="w-5 h-5 hover:text-white cursor-pointer transition-colors" />
+            <FaDiscord className="w-5 h-5 hover:text-white cursor-pointer transition-colors" />
             <FaGithub className="w-5 h-5 hover:text-white cursor-pointer transition-colors" />
             <FaYoutube className="w-5 h-5 hover:text-white cursor-pointer transition-colors" />
           </div>
