@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Layers } from "lucide-react";
+import Image from "next/image";
 import { Button } from "../ui/button";
 import { DiGithub } from "react-icons/di";
 
@@ -12,9 +12,11 @@ const Navbar = () => (
   >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div className="flex items-center gap-2 cursor-pointer">
-        <img
+        <Image
           src="/logo.png"
           alt="0GPilot Logo"
+          width={32}
+          height={32}
           className="w-auto h-8 rounded-full flex items-center justify-center"
         />
         <span className="text-xl font-bold tracking-tight text-white">
