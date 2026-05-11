@@ -91,7 +91,6 @@ export const AgentDashboard = () => {
         multiple
       />
 
-      {/* Main Card */}
       <div className="glass-card rounded-[2rem] border border-white/10 bg-[#0A0F1C]/80 backdrop-blur-xl p-8 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
@@ -103,7 +102,6 @@ export const AgentDashboard = () => {
           </div>
         </div>
 
-        {/* Prompt Input Area */}
         <div className="mb-10">
           <p className="text-sm text-slate-400 mb-4 ml-1">What do you want to build?</p>
           <div className="relative group">
@@ -156,7 +154,6 @@ export const AgentDashboard = () => {
           </div>
         </div>
 
-        {/* AI Agents Section */}
         <div>
           <div className="flex items-center justify-between mb-5">
             <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
@@ -205,7 +202,6 @@ export const AgentDashboard = () => {
         </div>
       </div>
 
-      {/* Decorative Glows */}
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 blur-[80px] -z-10 rounded-full" />
       <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/10 blur-[80px] -z-10 rounded-full" />
     </motion.div>

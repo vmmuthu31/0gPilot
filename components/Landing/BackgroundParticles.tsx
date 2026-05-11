@@ -34,7 +34,6 @@ export const SpaceBackground = () => {
     const frame = requestAnimationFrame(() => {
       setMounted(true);
       
-      // Initialize stars and dust only on client
       setStars(Array.from({ length: 150 }).map((_, i) => ({
         id: i,
         x: Math.random() * 100,
@@ -74,7 +73,6 @@ export const SpaceBackground = () => {
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#050816]">
-      {/* Interactive Layer (Slow Parallax) */}
       <motion.div 
         className="absolute inset-[-5%] z-0"
         animate={{ 
@@ -86,7 +84,6 @@ export const SpaceBackground = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.05),transparent_70%)]" />
       </motion.div>
       
-      {/* Twinkling Stars (Deep Layer) */}
       <motion.div 
         className="absolute inset-0"
         animate={{ 
@@ -120,7 +117,6 @@ export const SpaceBackground = () => {
         ))}
       </motion.div>
 
-      {/* Floating Dust Particles (Middle Layer) */}
       <motion.div 
         className="absolute inset-0"
         animate={{ 
@@ -156,13 +152,11 @@ export const SpaceBackground = () => {
         ))}
       </motion.div>
 
-      {/* Nebula Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/5 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/5 blur-[120px]" />
       
       <ShootingStars />
 
-      {/* Grid Overlay (Subtle) */}
       <div 
         className="absolute inset-0 opacity-[0.02]"
         style={{
