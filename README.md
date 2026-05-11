@@ -1,4 +1,4 @@
-# 0GPilot
+<img width="1251" height="534" alt="0GPilot" src="https://github.com/user-attachments/assets/e6ab443e-bbcc-4bea-ad33-6109a2bb0210" />
 
 ## Autonomous AI Software Engineer for Web3 Built on 0G
 
