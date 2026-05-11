@@ -79,7 +79,6 @@ export const Features = () => {
               whileHover={{ y: -8 }}
               className="glass-card p-8 rounded-2xl group cursor-pointer relative overflow-hidden flex flex-col border border-[var(--border)] hover:border-[#7c3aed]/50 transition-all duration-300 shadow-lg hover:shadow-[0_10px_40px_rgba(124,58,237,0.2)] bg-[#0a0f1c]/80 backdrop-blur-md"
             >
-              {/* Subtle hover glow background */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#7c3aed]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
               <div className="w-14 h-14 rounded-2xl bg-[#111526] border border-[var(--border)] flex items-center justify-center mb-8 group-hover:border-[#8b5cf6]/50 group-hover:bg-[#1a1625] transition-all relative z-10 shadow-inner group-hover:shadow-[0_0_15px_rgba(124,58,237,0.3)]">

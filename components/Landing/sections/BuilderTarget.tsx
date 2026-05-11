@@ -78,14 +78,15 @@ export const BuilderTarget = () => {
               className="min-w-[280px] md:min-w-[320px] flex-1 snap-center cursor-pointer group"
             >
               <div className="glass-card rounded-2xl p-6 h-[300px] border border-[var(--border)] hover:border-[#8b5cf6]/60 transition-all duration-300 flex flex-col relative overflow-hidden bg-[#0a0f1c]/80 shadow-lg hover:shadow-[0_15px_40px_rgba(124,58,237,0.15)]">
-                {/* Glow effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#7c3aed]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                 <div className="flex items-center gap-3 mb-4 relative z-10">
                   <div className="w-12 h-12 rounded-xl bg-[#111526] border border-[#7c3aed]/30 flex items-center justify-center text-[#a78bfa] group-hover:text-white group-hover:bg-[#7c3aed] transition-all duration-300 shadow-inner">
                     {card.icon}
                   </div>
-                  <h3 className="font-bold text-white text-lg group-hover:text-[#a78bfa] transition-colors">{card.title}</h3>
+                  <h3 className="font-bold text-white text-lg group-hover:text-[#a78bfa] transition-colors">
+                    {card.title}
+                  </h3>
                 </div>
 
                 <p className="text-sm text-[var(--text-secondary)] mb-6 flex-1 leading-relaxed relative z-10 group-hover:text-gray-300 transition-colors">
@@ -114,9 +115,21 @@ export const BuilderTarget = () => {
                         />
                       </svg>
                       <defs>
-                        <linearGradient id="gradient-line" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="rgba(124, 58, 237, 0.4)" />
-                          <stop offset="100%" stopColor="rgba(124, 58, 237, 0)" />
+                        <linearGradient
+                          id="gradient-line"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="rgba(124, 58, 237, 0.4)"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="rgba(124, 58, 237, 0)"
+                          />
                         </linearGradient>
                       </defs>
                     </div>
@@ -127,7 +140,12 @@ export const BuilderTarget = () => {
                         <div
                           key={j}
                           className="flex-1 rounded-t-sm transition-all duration-700 group-hover:bg-[#8b5cf6]"
-                          style={{ height: `${h}%`, backgroundColor: j % 2 === 0 ? '#3b82f6' : '#60a5fa', opacity: 0.8 }}
+                          style={{
+                            height: `${h}%`,
+                            backgroundColor:
+                              j % 2 === 0 ? "#3b82f6" : "#60a5fa",
+                            opacity: 0.8,
+                          }}
                         ></div>
                       ))}
                     </div>
@@ -137,7 +155,7 @@ export const BuilderTarget = () => {
                       <div className="w-[85%] h-2.5 bg-gradient-to-r from-[#7c3aed] to-[#c084fc] rounded-full shadow-[0_0_10px_rgba(124,58,237,0.5)] group-hover:w-[95%] transition-all duration-700"></div>
                       <div className="w-[50%] h-2.5 bg-gradient-to-r from-[#3b82f6] to-[#93c5fd] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)] group-hover:w-[60%] transition-all duration-700 delay-100"></div>
                       <div className="w-full h-2.5 bg-[#111526] border border-[var(--border)] rounded-full overflow-hidden">
-                         <div className="w-[30%] h-full bg-[#475569] opacity-50"></div>
+                        <div className="w-[30%] h-full bg-[#475569] opacity-50"></div>
                       </div>
                     </div>
                   )}
