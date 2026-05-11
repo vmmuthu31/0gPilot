@@ -37,12 +37,6 @@ Return:
 Use clean markdown formatting.
 `;
 
-/**
- * =========================================================
- * AUDIT AGENT
- * =========================================================
- */
-
 class AuditAgent {
   async execute(input: AuditAgentInput): Promise<AuditAgentResult> {
     try {
