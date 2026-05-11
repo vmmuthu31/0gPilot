@@ -13,12 +13,19 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
+      "@/agents/*": ["src/agents/*"],
+      "@/graph/*": ["src/graph/*"],
+      "@/prompts/*": ["src/prompts/*"],
+      "@/services/*": ["src/services/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
       "@/*": ["./*"]
     }
   },
