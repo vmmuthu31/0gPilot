@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
 
@@ -82,6 +83,12 @@ const infra = [
 ];
 
 export const Architecture = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const particles = [...Array(30)].map((_, i) => ({
     id: i,
     x: createParticleValue(i, 1, 1600),
@@ -95,24 +102,25 @@ export const Architecture = () => {
       <div className="absolute inset-0 grid-bg opacity-20" />
 
       <div className="absolute inset-0 overflow-hidden">
-        {particles.map((particle) => (
-          <motion.div
-            key={particle.id}
-            className="absolute w-1 h-1 rounded-full bg-purple-400/40"
-            initial={{
-              x: particle.x,
-              y: particle.y,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 1, 0.2],
-            }}
-            transition={{
-              duration: particle.duration,
-              repeat: Infinity,
-            }}
-          />
-        ))}
+        {mounted &&
+          particles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute w-1 h-1 rounded-full bg-purple-400/40"
+              initial={{
+                x: particle.x,
+                y: particle.y,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0.2, 1, 0.2],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+              }}
+            />
+          ))}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
