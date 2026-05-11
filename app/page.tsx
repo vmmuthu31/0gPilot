@@ -10,66 +10,39 @@ import HeroSection from "@/components/Landing/sections/HeroSection";
 import Partners from "@/components/Landing/sections/Partners";
 import { Process } from "@/components/Landing/sections/Process";
 import { Stats } from "@/components/Landing/sections/Stats";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
-
-const StickyCard = ({ children, index, total }: { children: React.ReactNode, index: number, total: number }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
-  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0.5]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-
-  return (
-    <div ref={containerRef} className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-      <motion.div 
-        style={{ scale, opacity, y }}
-        className={`w-full h-full bg-[#050816] flex flex-col justify-center ${index > 0 ? "rounded-t-[3rem] border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] mt-12" : ""}`}
-      >
-        <div className="w-full max-h-full overflow-y-auto hide-scrollbar">
-          {children}
-        </div>
-      </motion.div>
-    </div>
-  );
-};
 
 export default function App() {
   return (
-    <div className="min-h-screen selection:bg-[#7c3aed]/30 selection:text-white bg-[#050816] relative">
+    <div className="min-h-screen selection:bg-[#7c3aed]/30 selection:text-white bg-[var(--background)]">
       <Navbar />
 
-      <main className="relative pb-[50vh]">
-        <StickyCard index={0} total={6}>
+      <main className="relative z-10 flex flex-col">
+        <div className="relative z-[1] bg-transparent">
           <HeroSection />
           <Partners />
           <Stats />
-        </StickyCard>
+        </div>
         
-        <StickyCard index={1} total={6}>
+        <div className="relative z-[2] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Features />
-        </StickyCard>
+        </div>
 
-        <StickyCard index={2} total={6}>
+        <div className="relative z-[3] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Process />
-        </StickyCard>
+        </div>
 
-        <StickyCard index={3} total={6}>
+        <div className="relative z-[4] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Architecture />
-        </StickyCard>
+        </div>
 
-        <StickyCard index={4} total={6}>
+        <div className="relative z-[5] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <BuilderTarget />
-        </StickyCard>
+        </div>
 
-        <StickyCard index={5} total={6}>
+        <div className="relative z-[6] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8 pt-12">
           <CTA />
           <Footer />
-        </StickyCard>
+        </div>
       </main>
     </div>
   );
