@@ -22,7 +22,7 @@ export default function App() {
           <Partners />
           <Stats />
         </div>
-        
+
         <div className="relative z-[2] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Features />
         </div>
@@ -39,7 +39,7 @@ export default function App() {
           <BuilderTarget />
         </div>
 
-        <div className="relative z-[6] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8 pt-12">
+        <div>
           <CTA />
           <Footer />
         </div>
