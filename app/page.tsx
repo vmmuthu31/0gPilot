@@ -3,7 +3,7 @@
 import { Footer } from "@/components/Landing/Footer";
 import Navbar from "@/components/Landing/Navbar";
 import { Architecture } from "@/components/Landing/sections/Architecture";
-import { BuilderTarget } from "@/components/Landing/sections/BuilderTarget";
+import BuilderTargetSection from "@/components/Landing/sections/BuilderTarget";
 import { CTA } from "@/components/Landing/sections/CTA";
 import { Features } from "@/components/Landing/sections/Features";
 import HeroSection from "@/components/Landing/sections/HeroSection";
@@ -36,7 +36,7 @@ export default function App() {
         </div>
 
         <div className="relative z-[5] bg-[#050816] rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
-          <BuilderTarget />
+          <BuilderTargetSection />
         </div>
 
         <div>
