@@ -1,4 +1,3 @@
-````md
 # 0GPilot
 
 ## Autonomous AI Software Engineer for Web3 Built on 0G
@@ -136,7 +135,6 @@ D --> F[0G Chain]
 E --> G[Persistent AI Memory]
 F --> H[Onchain Deployment]
 ```
-````
 
 ---
 
@@ -298,7 +296,7 @@ F --> G[0G Chain Contracts]
 ## Clone Repository
 
 ```bash
-git clone https://github.com/your-repo/0gpilot.git
+git clone https://github.com/vmmuthu31/0gPilot.git
 cd 0gpilot
 ```
 
@@ -428,6 +426,3 @@ Built for the 0G APAC Hackathon focused on:
 - Decentralized AI Compute
 - Persistent Agent Memory
 
-```
-
-```
