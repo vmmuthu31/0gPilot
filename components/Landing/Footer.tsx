@@ -1,4 +1,4 @@
-import { Layers } from "lucide-react";
+import Image from "next/image";
 import { FaDiscord, FaGithub, FaTwitter, FaYoutube } from "react-icons/fa";
 
 export const Footer = () => (
@@ -7,9 +7,11 @@ export const Footer = () => (
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-16">
         <div className="col-span-2 lg:col-span-2">
           <div className="flex items-center gap-2 mb-6 cursor-pointer">
-            <img
+            <Image
               src="/logo.png"
               alt="0GPilot Logo"
+              width={32}
+              height={32}
               className="w-auto h-8 rounded-full flex items-center justify-center"
             />
             <span className="text-xl font-bold tracking-tight text-white">
