@@ -44,11 +44,14 @@ const Navbar = () => (
 
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
-          className="hidden sm:flex px-3 py-1.5 text-xs text-[var(--text-secondary)]"
+          variant="secondary"
+          size="sm"
+          className="hidden sm:flex items-center gap-2 rounded-xl px-4 text-white/80 hover:text-white"
         >
-          <DiGithub className="w-4 h-4" /> Star on GitHub
+          <DiGithub className="w-4 h-4" />
+          Star on GitHub
         </Button>
+
         <Button
           variant="link"
           className="px-4 py-2 text-sm bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]"

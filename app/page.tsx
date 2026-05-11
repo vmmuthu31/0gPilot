@@ -1,3 +1,5 @@
+"use client";
+
 import { Footer } from "@/components/Landing/Footer";
 import Navbar from "@/components/Landing/Navbar";
 import { Architecture } from "@/components/Landing/sections/Architecture";
