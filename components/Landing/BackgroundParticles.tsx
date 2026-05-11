@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Star {
@@ -27,9 +27,36 @@ interface Dust {
 export const SpaceBackground = () => {
   const [mounted, setMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [stars, setStars] = useState<Star[]>([]);
+  const [dustParticles, setDustParticles] = useState<Dust[]>([]);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => {
+      setMounted(true);
+      
+      // Initialize stars and dust only on client
+      setStars(Array.from({ length: 150 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.7 + 0.3,
+        duration: Math.random() * 3 + 2,
+        delay: Math.random() * 5,
+      })));
+
+      setDustParticles(Array.from({ length: 40 }).map((_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 4 + 2,
+        duration: Math.random() * 15 + 10,
+        delay: Math.random() * 5,
+        driftX: (Math.random() - 0.5) * 5,
+        driftY: (Math.random() - 0.5) * 5,
+      })));
+    });
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
@@ -37,32 +64,10 @@ export const SpaceBackground = () => {
       });
     };
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  const stars = useMemo(() => {
-    return Array.from({ length: 150 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      opacity: Math.random() * 0.7 + 0.3,
-      duration: Math.random() * 3 + 2,
-      delay: Math.random() * 5,
-    }));
-  }, []);
-
-  const dustParticles = useMemo(() => {
-    return Array.from({ length: 40 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 15 + 10,
-      delay: Math.random() * 5,
-      driftX: (Math.random() - 0.5) * 5,
-      driftY: (Math.random() - 0.5) * 5,
-    }));
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   if (!mounted) return null;
