@@ -24,8 +24,7 @@ export const CTA = () => (
         </div>
         <div className="flex flex-col sm:flex-row gap-4 shrink-0 w-full md:w-auto">
           <Button
-            variant="link"
-            className="px-8 py-4 text-base w-full sm:w-auto bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]"
+            className="px-8 py-4 text-base w-full sm:w-auto bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-xl hover:opacity-90 transition-opacity font-semibold border-0 shadow-[0_0_20px_rgba(124,58,237,0.3)]"
           >
             Start Building Now
           </Button>

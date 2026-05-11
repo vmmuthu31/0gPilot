@@ -53,8 +53,7 @@ const Navbar = () => (
         </Button>
 
         <Button
-          variant="link"
-          className="px-4 py-2 text-sm bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]"
+          className="px-5 text-sm bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-lg hover:opacity-90 transition-opacity font-medium border-0 shadow-[0_0_15px_rgba(124,58,237,0.3)]"
         >
           Launch App
         </Button>
