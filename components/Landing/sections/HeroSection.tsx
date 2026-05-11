@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
-  ArrowUpRight,
-  CheckCircle,
   ChevronRight,
-  Cpu,
-  FileText,
-  Layers,
   Play,
   Zap,
 } from "lucide-react";
@@ -30,7 +25,13 @@ const HeroSection = () => {
             variants={fadeInUp}
             className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1625] text-[#a78bfa] border border-[#a78bfa]/20 mb-6 gap-2 hover:bg-[#7c3aed]/20 transition-colors cursor-pointer"
           >
-            <img src="/0g.png" alt="0G" className="w-4 h-4 rounded-full" />
+            <Image 
+              src="/0g.png" 
+              alt="0G" 
+              width={16}
+              height={16}
+              className="w-4 h-4 rounded-full" 
+            />
             Built for the OG Ecosystem <ChevronRight className="w-3 h-3" />
           </motion.div>
 
@@ -79,9 +80,11 @@ const HeroSection = () => {
                   key={i}
                   className="w-8 h-8 rounded-full border-2 border-[var(--background)] bg-[#111526] overflow-hidden shadow-lg"
                 >
-                  <img
+                  <Image
                     src={`https://i.pravatar.cc/100?img=${i + 20}`}
                     alt="avatar"
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover"
                   />
                 </div>
