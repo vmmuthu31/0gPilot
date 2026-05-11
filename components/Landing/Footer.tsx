@@ -7,11 +7,11 @@ export const Footer = () => (
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-16">
         <div className="col-span-2 lg:col-span-2">
           <div className="flex items-center gap-2 mb-6 cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] flex items-center justify-center p-[1px]">
-              <div className="w-full h-full bg-[var(--background)] rounded-full flex items-center justify-center">
-                <Layers className="w-4 h-4 text-white" />
-              </div>
-            </div>
+            <img
+              src="/logo.png"
+              alt="0GPilot Logo"
+              className="w-auto h-8 rounded-full flex items-center justify-center"
+            />
             <span className="text-xl font-bold tracking-tight text-white">
               OGPilot
             </span>

@@ -44,11 +44,9 @@ const HeroSection = () => {
         >
           <motion.div
             variants={fadeInUp}
-            className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1625] text-[#a78bfa] border border-[#a78bfa]/20 mb-6 gap-2"
+            className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1625] text-[#a78bfa] border border-[#a78bfa]/20 mb-6 gap-2 hover:bg-[#7c3aed]/20 transition-colors cursor-pointer"
           >
-            <div className="w-4 h-4 rounded-full bg-[#7c3aed] flex items-center justify-center">
-              <span className="text-[8px] text-white font-bold">OG</span>
-            </div>
+            <img src="/0g.png" alt="0G" className="w-4 h-4 rounded-full" />
             Built for the OG Ecosystem <ChevronRight className="w-3 h-3" />
           </motion.div>
 
@@ -75,25 +73,27 @@ const HeroSection = () => {
             className="flex flex-wrap items-center gap-4 mb-10"
           >
             <Button
-              variant="link"
-              className="px-6 py-3 text-base shadow-[0_0_20px_rgba(124,58,237,0.5)]"
+              className="px-8 py-6 text-base bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-xl font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1"
             >
-              <Zap className="w-4 h-4 fill-current" /> Build Your DApp
+              <Zap className="w-5 h-5 fill-current" /> Build Your DApp
             </Button>
-            <Button variant="secondary" className="px-6 py-3 text-base">
+            <Button 
+              variant="outline" 
+              className="px-8 py-6 text-base border-[var(--border)] bg-transparent hover:bg-[#111526] text-white rounded-xl font-semibold flex items-center gap-2 transition-all hover:border-[#7c3aed]/50 hover:-translate-y-1"
+            >
               Explore Demo <Play className="w-4 h-4" />
             </Button>
           </motion.div>
 
           <motion.div
             variants={fadeInUp}
-            className="flex items-center gap-4 text-sm text-[var(--text-secondary)]"
+            className="flex items-center gap-4 text-sm text-[var(--text-secondary)] bg-[#111526]/50 border border-[var(--border)] py-2 px-4 rounded-full w-max backdrop-blur-sm"
           >
             <div className="flex -space-x-2">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="w-8 h-8 rounded-full border-2 border-[var(--background)] bg-[#111526] overflow-hidden"
+                  className="w-8 h-8 rounded-full border-2 border-[var(--background)] bg-[#111526] overflow-hidden shadow-lg"
                 >
                   <img
                     src={`https://i.pravatar.cc/100?img=${i + 20}`}
@@ -104,7 +104,7 @@ const HeroSection = () => {
               ))}
             </div>
             <span>
-              Trusted by <strong className="text-white">950+</strong> builders
+              Trusted by <strong className="text-white font-bold">950+</strong> builders
               worldwide
             </span>
           </motion.div>

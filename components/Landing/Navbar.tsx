@@ -12,11 +12,11 @@ const Navbar = () => (
   >
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div className="flex items-center gap-2 cursor-pointer">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8b5cf6] to-[#3b82f6] flex items-center justify-center p-[1px]">
-          <div className="w-full h-full bg-[var(--background)] rounded-full flex items-center justify-center">
-            <Layers className="w-4 h-4 text-white" />
-          </div>
-        </div>
+        <img
+          src="/logo.png"
+          alt="0GPilot Logo"
+          className="w-auto h-8 rounded-full flex items-center justify-center"
+        />
         <span className="text-xl font-bold tracking-tight text-white">
           OGPilot
         </span>
