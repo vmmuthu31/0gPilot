@@ -21,7 +21,7 @@ export async function githubNode(
       return { status: "GitHub Push Skipped (no token)" };
     }
 
-    const built = await projectBuilderService.build({
+    await projectBuilderService.build({
       projectId: state.projectId!,
       prompt: state.prompt,
       architecture: state.architecture,

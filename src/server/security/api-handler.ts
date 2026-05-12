@@ -28,7 +28,6 @@ export function withSecurity<T>(
         );
       }
 
-      const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
       const limitKey = `rate-limit:${session.userId}`;
       const requests = await connection.incr(limitKey);
       if (requests === 1) {
