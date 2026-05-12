@@ -1,4 +1,6 @@
 export interface WorkflowState {
+  projectId?: string;
+
   prompt: string;
 
   architecture?: string;
@@ -10,6 +12,12 @@ export interface WorkflowState {
   audit?: string;
 
   deployment?: string;
+
+  backend?: string;
+
+  tests?: string;
+
+  analytics?: string;
 
   memoryHash?: string;
 
