@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import React, { cloneElement, useEffect, useState, type ReactElement } from "react";
 import { motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
 
@@ -98,7 +98,7 @@ export const Architecture = () => {
   }));
 
   return (
-    <section id="architecture" className="relative py-32 overflow-hidden">
+    <section id="architecture" className="relative py-20 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.18),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.18),transparent_25%)]" />
       <div className="absolute inset-0 grid-bg opacity-20" />
 
@@ -125,17 +125,17 @@ export const Architecture = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-14 items-center">
+        <div className="grid lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/20 bg-purple-500/10 mb-6">
-              <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 mb-5">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
 
-              <span className="text-sm text-purple-300">
+              <span className="text-[12px] text-purple-300">
                 Powered by 0G Infrastructure
               </span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-5">
               Built on{" "}
               <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 0G
@@ -144,12 +144,12 @@ export const Architecture = () => {
               Modular Architecture
             </h2>
 
-            <p className="text-slate-400 leading-relaxed mb-8 text-lg">
+            <p className="text-slate-400 leading-relaxed mb-6 text-base">
               OGPilot leverages decentralized AI infrastructure to deliver
               scalable, autonomous, and verifiable Web3 application development.
             </p>
 
-            <ul className="space-y-5 mb-10">
+            <ul className="space-y-4 mb-8">
               {[
                 "Decentralized Compute for AI Inference",
                 "Persistent Long-Term Memory",
@@ -162,18 +162,18 @@ export const Architecture = () => {
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex items-start gap-4"
+                  className="flex items-start gap-3"
                 >
-                  <div className="w-6 h-6 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mt-0.5">
-                    <CheckCircle className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="w-5 h-5 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mt-0.5">
+                    <CheckCircle className="w-3 h-3 text-purple-400" />
                   </div>
 
-                  <span className="text-slate-300">{item}</span>
+                  <span className="text-slate-300 text-sm">{item}</span>
                 </motion.li>
               ))}
             </ul>
 
-            <Button className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 text-white border-0 shadow-[0_0_30px_rgba(124,58,237,0.35)]">
+            <Button className="h-11 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 text-sm text-white border-0 shadow-[0_0_30px_rgba(124,58,237,0.35)]">
               Explore Architecture
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -187,23 +187,23 @@ export const Architecture = () => {
               tiltMaxAngleX={4}
               tiltMaxAngleY={4}
             >
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0B1120]/90 backdrop-blur-2xl p-8 shadow-[0_0_80px_rgba(124,58,237,0.15)]">
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0B1120]/90 backdrop-blur-2xl p-6 shadow-[0_0_80px_rgba(124,58,237,0.15)]">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5" />
 
                 <div className="relative z-20 flex flex-col items-center">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className="mb-16 relative"
+                    className="mb-10 relative"
                   >
-                    <div className="px-8 py-3 rounded-2xl border border-purple-500/30 bg-[#111827]/80 backdrop-blur-xl text-white font-semibold shadow-[0_0_30px_rgba(124,58,237,0.25)]">
+                    <div className="px-6 py-2 rounded-xl border border-purple-500/30 bg-[#111827]/80 backdrop-blur-xl text-[13px] text-white font-semibold shadow-[0_0_30px_rgba(124,58,237,0.25)]">
                       User
                     </div>
 
-                    <div className="absolute left-1/2 top-full -translate-x-1/2 w-[2px] h-16 bg-gradient-to-b from-purple-500 to-blue-500">
+                    <div className="absolute left-1/2 top-full -translate-x-1/2 w-[2px] h-10 bg-gradient-to-b from-purple-500 to-blue-500">
                       <motion.div
-                        className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-purple-400 shadow-[0_0_15px_#7c3aed]"
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_15px_#7c3aed]"
                         animate={{
-                          y: [0, 50, 0],
+                          y: [0, 30, 0],
                         }}
                         transition={{
                           duration: 3,
@@ -225,22 +225,22 @@ export const Architecture = () => {
                       duration: 3,
                       repeat: Infinity,
                     }}
-                    className="relative mb-28 overflow-hidden rounded-2xl border border-purple-500/40 bg-[#111526]/90 px-10 py-5 backdrop-blur-xl"
+                    className="relative mb-16 overflow-hidden rounded-xl border border-purple-500/40 bg-[#111526]/90 px-8 py-3.5 backdrop-blur-xl"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-cyan-500/10 animate-pulse" />
 
-                    <div className="relative z-10 flex items-center gap-3 text-white font-bold text-lg">
-                      <Layers className="w-5 h-5 text-purple-400" />
+                    <div className="relative z-10 flex items-center gap-3 text-white font-bold text-[15px]">
+                      <Layers className="w-4 h-4 text-purple-400" />
                       OGPilot AI Orchestrator
                     </div>
                   </motion.div>
 
-                  <div className="relative w-full mb-28">
-                    <div className="absolute top-[40px] left-[7%] right-[7%] h-[2px] bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500">
+                  <div className="relative w-full mb-16">
+                    <div className="absolute top-[32px] left-[7%] right-[7%] h-[2px] bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500">
                       {[...Array(5)].map((_, i) => (
                         <motion.div
                           key={i}
-                          className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_15px_#7c3aed]"
+                          className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_15px_#7c3aed]"
                           animate={{
                             x: ["0%", "1000%"],
                             opacity: [0, 1, 0],
@@ -255,17 +255,17 @@ export const Architecture = () => {
                       ))}
                     </div>
 
-                    <div className="relative z-20 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-5">
+                    <div className="relative z-20 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
                       {agents.map((agent, i) => (
                         <div
                           key={i}
                           className="relative flex flex-col items-center"
                         >
-                          <div className="absolute top-[-42px] w-[2px] h-[42px] bg-gradient-to-b from-blue-500 to-purple-500">
+                          <div className="absolute top-[-34px] w-[2px] h-[34px] bg-gradient-to-b from-blue-500 to-purple-500">
                             <motion.div
-                              className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_12px_#06b6d4]"
+                              className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_12px_#06b6d4]"
                               animate={{
-                                y: [0, 30, 0],
+                                y: [0, 25, 0],
                               }}
                               transition={{
                                 duration: 2.5,
@@ -278,21 +278,21 @@ export const Architecture = () => {
                           <motion.div
                             whileHover={{
                               scale: 1.08,
-                              y: -8,
+                              y: -5,
                             }}
                             animate={{
-                              y: [0, -5, 0],
+                              y: [0, -4, 0],
                             }}
                             transition={{
                               duration: 3 + i * 0.2,
                               repeat: Infinity,
                             }}
-                            className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#111827]/80 backdrop-blur-xl p-5 text-center hover:border-purple-500/40 transition-all cursor-pointer w-full"
+                            className="relative overflow-hidden rounded-xl border border-white/10 bg-[#111827]/80 backdrop-blur-xl p-3.5 text-center hover:border-purple-500/40 transition-all cursor-pointer w-full"
                           >
                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 hover:opacity-100 transition-opacity" />
 
                             <motion.div
-                              className="absolute inset-0 rounded-2xl"
+                              className="absolute inset-0 rounded-xl"
                               animate={{
                                 boxShadow: [
                                   "0 0 0px rgba(124,58,237,0)",
@@ -308,32 +308,34 @@ export const Architecture = () => {
                             />
 
                             <div
-                              className={`relative z-10 flex justify-center mb-3 ${agent.color}`}
+                              className={`relative z-10 flex justify-center mb-2 ${agent.color}`}
                             >
-                              {agent.icon}
+                              {cloneElement(agent.icon as ReactElement<{ className?: string }>, {
+                                className: "w-4 h-4"
+                              })}
                             </div>
 
-                            <div className="relative z-10 text-sm text-white font-semibold">
+                            <div className="relative z-10 text-[11px] text-white font-bold">
                               {agent.name}
                             </div>
 
-                            <div className="relative z-10 text-[11px] text-slate-400">
+                            <div className="relative z-10 text-[9px] text-slate-400">
                               Agent
                             </div>
                           </motion.div>
 
-                          <div className="absolute bottom-[-55px] w-[2px] h-[55px] bg-gradient-to-b from-purple-500 to-cyan-500">
+                          <div className="absolute bottom-[-34px] w-[2px] h-[34px] bg-gradient-to-b from-purple-500 to-cyan-500">
                             <motion.div
                               className="absolute bottom-0 left-1/2 -translate-x-1/2"
                               animate={{
-                                y: [0, 10, 0],
+                                y: [0, 8, 0],
                               }}
                               transition={{
                                 duration: 1.5,
                                 repeat: Infinity,
                               }}
                             >
-                              <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[10px] border-l-transparent border-r-transparent border-t-cyan-400" />
+                              <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[8px] border-l-transparent border-r-transparent border-t-cyan-400" />
                             </motion.div>
                           </div>
                         </div>
@@ -341,26 +343,28 @@ export const Architecture = () => {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-5 w-full mb-10">
+                  <div className="grid md:grid-cols-3 gap-4 w-full mb-8">
                     {infra.map((item, i) => (
                       <motion.div
                         key={i}
                         whileHover={{
                           scale: 1.04,
                         }}
-                        className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0F172A]/80 p-6 backdrop-blur-xl hover:border-purple-500/40 transition-all"
+                        className="relative overflow-hidden rounded-xl border border-white/10 bg-[#0F172A]/80 p-4 backdrop-blur-xl hover:border-purple-500/40 transition-all"
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 opacity-0 hover:opacity-100 transition-opacity" />
 
-                        <div className="relative z-10 flex items-center gap-3 mb-2">
-                          {item.icon}
+                        <div className="relative z-10 flex items-center gap-3 mb-1.5">
+                          {cloneElement(item.icon as ReactElement<{ className?: string }>, {
+                            className: "w-4 h-4"
+                          })}
 
-                          <div className="text-white font-semibold">
+                          <div className="text-[13px] text-white font-semibold">
                             {item.title}
                           </div>
                         </div>
 
-                        <div className="relative z-10 text-sm text-slate-400">
+                        <div className="relative z-10 text-[11px] text-slate-400">
                           {item.sub}
                         </div>
                       </motion.div>
@@ -371,22 +375,22 @@ export const Architecture = () => {
                     whileHover={{
                       scale: 1.02,
                     }}
-                    className="w-full rounded-2xl border border-white/10 bg-[#111827]/70 backdrop-blur-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4"
+                    className="w-full rounded-xl border border-white/10 bg-[#111827]/70 backdrop-blur-xl p-4 flex flex-col md:flex-row items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-3 text-white">
-                      <Terminal className="w-5 h-5 text-blue-400" />
+                    <div className="flex items-center gap-2.5 text-white">
+                      <Terminal className="w-4 h-4 text-blue-400" />
 
-                      <span className="font-medium">
+                      <span className="text-[13px] font-medium">
                         OpenClaw Orchestration
                       </span>
                     </div>
 
-                    <div className="w-px h-6 bg-white/10 hidden md:block" />
+                    <div className="w-px h-5 bg-white/10 hidden md:block" />
 
-                    <div className="flex items-center gap-3 text-white">
-                      <Shield className="w-5 h-5 text-cyan-400" />
+                    <div className="flex items-center gap-2.5 text-white">
+                      <Shield className="w-4 h-4 text-cyan-400" />
 
-                      <span className="font-medium">
+                      <span className="text-[13px] font-medium">
                         Agent ID Identity Layer
                       </span>
                     </div>
