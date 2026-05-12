@@ -9,6 +9,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const projects = [
   {
@@ -73,54 +74,58 @@ export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
       </div>
 
       <div className="space-y-4">
-        {projects.map((project, i) => (
-          <motion.div
-            key={project.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="group bg-[#0B1120] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all flex items-center justify-between"
-          >
-            <div className="flex items-center gap-6">
-              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-purple-500/20">
-                <FileJson className="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{project.name}</h3>
-                <p className="text-sm text-slate-500 mb-3">{project.desc}</p>
-                <div className="flex items-center gap-3">
-                  {project.stack.map(s => (
-                    <span key={s} className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">
-                      {s}
-                    </span>
-                  ))}
+        {projects.map((project, i) => {
+          const projectSlug = project.name.toLowerCase().replace(/\s+/g, '-');
+          return (
+            <Link href={`/dashboard/projects/${projectSlug}`} key={project.name}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="group bg-[#0B1120] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all flex items-center justify-between mb-4 block"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-purple-500/20">
+                    <FileJson className="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{project.name}</h3>
+                    <p className="text-sm text-slate-500 mb-3">{project.desc}</p>
+                    <div className="flex items-center gap-3">
+                      {project.stack.map(s => (
+                        <span key={s} className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-12">
-              <div className="text-right">
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold mb-2 ${project.bgColor} ${project.color} border ${project.borderColor}`}>
-                  {project.status === "Deployed" ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                  {project.status}
+                <div className="flex items-center gap-12">
+                  <div className="text-right">
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold mb-2 ${project.bgColor} ${project.color} border ${project.borderColor}`}>
+                      {project.status === "Deployed" ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                      {project.status}
+                    </div>
+                    {project.progress ? (
+                       <div className="w-32">
+                          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-purple-500 rounded-full" style={{ width: `${project.progress}%` }} />
+                          </div>
+                          <span className="text-[10px] text-slate-500 mt-1 block">{project.progress}%</span>
+                       </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-500">{project.date}</p>
+                    )}
+                  </div>
+                  <button className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors">
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
                 </div>
-                {project.progress ? (
-                   <div className="w-32">
-                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-purple-500 rounded-full" style={{ width: `${project.progress}%` }} />
-                      </div>
-                      <span className="text-[10px] text-slate-500 mt-1 block">{project.progress}%</span>
-                   </div>
-                ) : (
-                  <p className="text-[10px] text-slate-500">{project.date}</p>
-                )}
-              </div>
-              <button className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
