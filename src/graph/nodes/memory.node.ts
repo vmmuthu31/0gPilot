@@ -30,9 +30,10 @@ export async function memoryNode(
     );
 
     if (!result.success) {
+      const memoryError = result.error.message || "Memory persistence failed";
       return {
-        error: result.error.message || "Memory persistence failed",
-        status: "FAILED",
+        error: state.error || memoryError,
+        status: state.error ? "FAILED (Memory Not Persisted)" : "FAILED",
       };
     }
 
@@ -41,10 +42,11 @@ export async function memoryNode(
       status: "Persisted",
     };
   } catch (error: unknown) {
+    const memoryError =
+      error instanceof Error ? error.message : "Memory node execution failed";
     return {
-      error:
-        error instanceof Error ? error.message : "Memory node execution failed",
-      status: "FAILED",
+      error: state.error || memoryError,
+      status: state.error ? "FAILED (Memory Not Persisted)" : "FAILED",
     };
   }
 }

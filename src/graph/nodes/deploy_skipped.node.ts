@@ -4,6 +4,6 @@ export async function deploySkippedNode(
   state: WorkflowState,
 ): Promise<Partial<WorkflowState>> {
   return {
-    status: "Deployment Skipped",
+    status: state.error ? "Deployment Skipped" : "Deployment Skipped",
   };
 }
