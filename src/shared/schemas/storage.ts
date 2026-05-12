@@ -37,6 +37,7 @@ export const WorkflowMemoryManifestSchema = z.object({
   audit: z.string().optional(),
   deployment: z.string().optional(),
   backend: z.string().optional(),
+  databaseDesign: z.string().optional(),
   tests: z.string().optional(),
   analytics: z.string().optional(),
   status: z.string().optional(),
@@ -55,4 +56,5 @@ export const DeploymentManifestSchema = z.object({
 export type PromptVersionManifest = z.infer<typeof PromptVersionManifestSchema>;
 export type GeneratedFileManifest = z.infer<typeof GeneratedFileManifestSchema>;
 export type AuditReportManifest = z.infer<typeof AuditReportManifestSchema>;
+export type WorkflowMemoryManifest = z.infer<typeof WorkflowMemoryManifestSchema>;
 export type DeploymentManifest = z.infer<typeof DeploymentManifestSchema>;
