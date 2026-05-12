@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const CTA = () => (
   <section className="py-24 relative overflow-hidden z-10 border-y border-[var(--border)]">
@@ -23,11 +24,13 @@ export const CTA = () => (
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 shrink-0 w-full md:w-auto">
-          <Button
-            className="px-8 py-4 text-base w-full sm:w-auto bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-xl hover:opacity-90 transition-opacity font-semibold border-0 shadow-[0_0_20px_rgba(124,58,237,0.3)]"
-          >
-            Start Building Now
-          </Button>
+          <Link href="/dashboard">
+            <Button
+              className="px-8 py-4 text-base w-full sm:w-auto bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-xl hover:opacity-90 transition-opacity font-semibold border-0 shadow-[0_0_20px_rgba(124,58,237,0.3)]"
+            >
+              Start Building Now
+            </Button>
+          </Link>
           <Button
             variant="secondary"
             className="px-8 py-4 text-base w-full sm:w-auto bg-[#111526]"

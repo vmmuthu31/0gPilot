@@ -8,6 +8,7 @@ import {
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 
+import Link from "next/link";
 import { AgentDashboard } from "../AgentDashboard";
 
 const HeroSection = () => {
@@ -57,11 +58,13 @@ const HeroSection = () => {
             variants={fadeInUp}
             className="flex flex-wrap items-center gap-4 mb-10"
           >
-            <Button
-              className="px-8 py-6 text-base bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-xl font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1"
-            >
-              <Zap className="w-5 h-5 fill-current" /> Build Your DApp
-            </Button>
+            <Link href="/dashboard">
+              <Button
+                className="px-8 py-6 text-base bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-xl font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1"
+              >
+                <Zap className="w-5 h-5 fill-current" /> Build Your DApp
+              </Button>
+            </Link>
             <Button 
               variant="outline" 
               className="px-8 py-6 text-base border-[var(--border)] bg-transparent hover:bg-[#111526] text-white rounded-xl font-semibold flex items-center gap-2 transition-all hover:border-[#7c3aed]/50 hover:-translate-y-1"
