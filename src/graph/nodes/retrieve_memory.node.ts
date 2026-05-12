@@ -1,17 +1,16 @@
 import { WorkflowState } from "../state";
 import { vectorService } from "@/services/vector.service";
 import { memoryService } from "@/services/memory.service";
+import { env } from "@/server/config/env";
 
-const SIMILARITY_THRESHOLD = parseFloat(
-  process.env.VECTOR_SIMILARITY_THRESHOLD ?? "0.8",
-);
+const SIMILARITY_THRESHOLD = env.VECTOR_SIMILARITY_THRESHOLD;
 
 export async function retrieveMemoryNode(
   state: WorkflowState,
 ): Promise<Partial<WorkflowState>> {
   try {
     const similar = await vectorService.searchSimilar(state.prompt);
-    if (similar.length > 0 && similar[0].score > SIMILARITY_THRESHOLD) {
+    if (similar.length > 0 && (similar[0].score ?? 0) > SIMILARITY_THRESHOLD) {
       const pastMemory = (await memoryService.loadProjectMemory(
         similar[0].memoryHash,
       )) as Partial<WorkflowState> | null;
