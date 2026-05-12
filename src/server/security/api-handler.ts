@@ -3,6 +3,7 @@ import { z } from "zod";
 import { connection } from "@/server/queue/redis";
 import { checkPromptSafety } from "./moderation";
 import { verifySession, extractBearerToken, type SessionPayload } from "@/server/auth/session";
+import { assertProductionSecrets } from "@/server/config/env";
 
 export function withSecurity<T>(
   schema: z.ZodSchema<T>,
@@ -10,6 +11,8 @@ export function withSecurity<T>(
 ) {
   return async (req: Request) => {
     try {
+      assertProductionSecrets();
+
       const token = extractBearerToken(req.headers.get("Authorization"));
 
       if (!token) {
