@@ -12,6 +12,7 @@ import { deployNode } from "./nodes/deploy.node";
 import { deploySkippedNode } from "./nodes/deploy_skipped.node";
 import { analyticsNode } from "./nodes/analytics.node";
 import { memoryNode } from "./nodes/memory.node";
+import { retrieveMemoryNode } from "./nodes/retrieve_memory.node";
 
 import { WorkflowState } from "./state";
 
@@ -79,7 +80,11 @@ export function createWorkflow() {
 
     .addNode("memory", memoryNode)
 
-    .addEdge(START, "validate")
+    .addNode("retrieve_memory", retrieveMemoryNode)
+
+    .addEdge(START, "retrieve_memory")
+
+    .addEdge("retrieve_memory", "validate")
 
     .addEdge("validate", "planner")
 

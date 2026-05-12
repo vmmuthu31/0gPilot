@@ -28,6 +28,7 @@
       "@/utils/*": ["src/utils/*"],
       "@/shared/*": ["src/shared/*"],
       "@/server/*": ["src/server/*"],
+      "@/chains/*": ["src/chains/*"],
       "@/*": ["./*"]
     }
   },

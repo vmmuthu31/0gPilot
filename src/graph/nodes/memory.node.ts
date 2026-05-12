@@ -1,6 +1,9 @@
 import { memoryService } from "@/services/memory.service";
 
 import { retryAgentResult } from "@/graph/retry";
+import { vectorService } from "@/services/vector.service";
+import { chainService } from "@/services/chain.service";
+import crypto from "crypto";
 
 import { WorkflowState } from "../state";
 
@@ -37,9 +40,19 @@ export async function memoryNode(
       };
     }
 
+    const memoryHash = result.data.rootHash;
+    const promptHash = crypto.createHash("sha256").update(state.prompt).digest("hex");
+    const executionProof = crypto.createHash("sha256").update(state.architecture || "").digest("hex");
+
+    // Index vector memory
+    await vectorService.indexMemory(projectId, state.prompt, memoryHash);
+
+    // Register on 0G Pilot Registry
+    await chainService.registerExecution(projectId, promptHash, memoryHash, executionProof);
+
     return {
-      memoryHash: result.data.rootHash,
-      status: "Persisted",
+      memoryHash,
+      status: "Persisted & Registered",
     };
   } catch (error: unknown) {
     const memoryError =
