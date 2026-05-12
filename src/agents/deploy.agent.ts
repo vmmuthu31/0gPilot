@@ -9,7 +9,11 @@ export interface DeployAgentInput {
   contracts?: string;
 }
 
-export type DeployAgentResult = AgentResult<{ deployment: string; address?: string; txHash?: string }>;
+export type DeployAgentResult = AgentResult<{
+  deployment: string;
+  address?: string;
+  txHash?: string;
+}>;
 
 class DeployAgent {
   async execute(input: DeployAgentInput): Promise<DeployAgentResult> {
@@ -26,10 +30,12 @@ class DeployAgent {
         try {
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const solc = require("solc");
-          
-          const solidityMatch = input.contracts.match(/```solidity\n([\s\S]*?)```/);
+
+          const solidityMatch = input.contracts.match(
+            /```solidity\n([\s\S]*?)```/,
+          );
           let sourceCode = solidityMatch ? solidityMatch[1] : input.contracts;
-          
+
           const nameMatch = sourceCode.match(/contract\s+([a-zA-Z0-9_]+)/);
           const contractName = nameMatch ? nameMatch[1] : null;
 
@@ -40,27 +46,38 @@ class DeployAgent {
 
           if (contractName) {
             const compilerInput = {
-              language: 'Solidity',
-              sources: { 'Generated.sol': { content: sourceCode } },
-              settings: { outputSelection: { '*': { '*': ['*'] } } }
+              language: "Solidity",
+              sources: { "Generated.sol": { content: sourceCode } },
+              settings: { outputSelection: { "*": { "*": ["*"] } } },
             };
 
-            const output = JSON.parse(solc.compile(JSON.stringify(compilerInput)));
-            
+            const output = JSON.parse(
+              solc.compile(JSON.stringify(compilerInput)),
+            );
+
             if (output.errors) {
-              const hasError = output.errors.some((e: any) => e.severity === 'error');
+              const hasError = output.errors.some(
+                (e: { severity: string }) => e.severity === "error",
+              );
               if (hasError) {
-                deploymentLog += "Compilation Errors:\n" + JSON.stringify(output.errors) + "\n";
+                deploymentLog +=
+                  "Compilation Errors:\n" +
+                  JSON.stringify(output.errors) +
+                  "\n";
               }
             }
-            
-            const compiledContract = output.contracts?.['Generated.sol']?.[contractName];
-            
+
+            const compiledContract =
+              output.contracts?.["Generated.sol"]?.[contractName];
+
             if (compiledContract) {
               const abi = compiledContract.abi;
               const bytecode = compiledContract.evm.bytecode.object;
-              
-              const deployResult = await deploymentService.deployContract(abi, bytecode);
+
+              const deployResult = await deploymentService.deployContract(
+                abi,
+                bytecode,
+              );
               if (deployResult.success && deployResult.address) {
                 deployedAddress = deployResult.address;
                 deployedTxHash = deployResult.txHash;
@@ -72,8 +89,9 @@ class DeployAgent {
               deploymentLog += `\nCould not find compiled contract for ${contractName}\n`;
             }
           }
-        } catch (err: any) {
-          deploymentLog += `\nAutonomous deployment step failed: ${err.message}\n`;
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          deploymentLog += `\nError during autonomous deployment: ${errMsg}\n`;
         }
       }
 
@@ -116,11 +134,14 @@ ${deploymentLog || "Not attempted"}
         );
       }
 
-      return agentOk({ 
-        deployment: response.content || "",
-        address: deployedAddress,
-        txHash: deployedTxHash
-      }, response);
+      return agentOk(
+        {
+          deployment: response.content || "",
+          address: deployedAddress,
+          txHash: deployedTxHash,
+        },
+        response,
+      );
     } catch (error: unknown) {
       console.error("Deploy Agent Error:", error);
 
