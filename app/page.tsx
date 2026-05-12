@@ -25,19 +25,24 @@ export default function App() {
           <Stats />
         </div>
 
-        <div className="relative z-[2] bg-[#050816]/60 backdrop-blur-sm rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
-          <Features />
+        <div className="relative z-[2] mt-8">
+          {/* Section Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-4xl bg-purple-600/10 blur-[120px] pointer-events-none rounded-full" />
+          
+          <div className="relative z-10 bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-20px_50px_rgba(147,51,234,0.15)]">
+            <Features />
+          </div>
         </div>
 
-        <div className="relative z-[3] bg-[#050816]/60 backdrop-blur-sm rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
+        <div className="relative z-[3] bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Process />
         </div>
 
-        <div className="relative z-[4] bg-[#050816]/60 backdrop-blur-sm rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
+        <div className="relative z-[4] bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <Architecture />
         </div>
 
-        <div className="relative z-[5] bg-[#050816]/60 backdrop-blur-sm rounded-t-[2.5rem] border-t border-[var(--border)] shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
+        <div className="relative z-[5] bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <BuilderTargetSection />
         </div>
 

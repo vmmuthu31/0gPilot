@@ -18,7 +18,8 @@ const Navbar = () => (
           alt="0GPilot Logo"
           width={32}
           height={32}
-          className="w-auto h-8 rounded-full flex items-center justify-center"
+          className="h-8 rounded-full"
+          style={{ width: "auto" }}
         />
         <span className="text-xl font-bold tracking-tight text-white">
           OGPilot

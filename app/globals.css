@@ -133,16 +133,12 @@ html {
 
 body {
   background:
-    radial-gradient(
-      circle at top left,
+    radial-gradient(circle at top left,
       rgba(124, 58, 237, 0.18),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at bottom right,
+      transparent 30%),
+    radial-gradient(circle at bottom right,
       rgba(59, 130, 246, 0.15),
-      transparent 30%
-    ),
+      transparent 30%),
     var(--background);
 
   color: var(--foreground);
