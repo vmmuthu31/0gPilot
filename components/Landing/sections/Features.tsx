@@ -70,41 +70,46 @@ export const Features = () => {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
           variants={staggerContainer}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
         >
           {features.map((feature, i) => (
             <motion.div
               key={i}
               variants={fadeInUp}
-              whileHover={{ y: -8 }}
-              className="glass-card p-8 rounded-2xl group cursor-pointer relative overflow-hidden flex flex-col border border-[var(--border)] hover:border-[#7c3aed]/50 transition-all duration-300 shadow-lg hover:shadow-[0_10px_40px_rgba(124,58,237,0.2)] bg-[#0a0f1c]/80 backdrop-blur-md"
+              whileHover={{ 
+                y: -4,
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+              className="glass-card p-4 rounded-xl group cursor-pointer relative overflow-hidden flex flex-col border border-white/10 border-t-white/20 hover:border-purple-400/50 transition-all duration-300 bg-white/[0.02] backdrop-blur-[4px] h-[220px]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#7c3aed]/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-              <div className="w-14 h-14 rounded-2xl bg-[#111526] border border-[var(--border)] flex items-center justify-center mb-8 group-hover:border-[#8b5cf6]/50 group-hover:bg-[#1a1625] transition-all relative z-10 shadow-inner group-hover:shadow-[0_0_15px_rgba(124,58,237,0.3)]">
+              {/* Dynamic Glow Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-transparent to-blue-500/0 group-hover:from-purple-500/15 group-hover:to-blue-500/15 transition-colors duration-500" />
+              
+              <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/20 flex items-center justify-center mb-4 group-hover:border-purple-400/60 group-hover:bg-purple-500/20 transition-all duration-300 relative z-10 shadow-[0_0_15px_rgba(147,51,234,0.1)] group-hover:shadow-[0_0_25px_rgba(147,51,234,0.35)]">
                 {cloneElement(
                   feature.icon as ReactElement<{ className?: string }>,
                   {
                     className:
-                      "w-7 h-7 text-[#a78bfa] group-hover:text-white transition-colors duration-300",
+                      "w-5 h-5 text-purple-400 group-hover:text-white transition-colors duration-300",
                   },
                 )}
               </div>
 
-              <h3 className="text-xl font-bold mb-3 text-white group-hover:text-[#a78bfa] transition-colors relative z-10">
+              <h3 className="text-[15px] font-bold mb-1.5 text-white group-hover:text-purple-300 transition-colors relative z-10 line-clamp-1">
                 {feature.title}
               </h3>
 
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed flex-1 relative z-10 group-hover:text-gray-300 transition-colors">
+              <p className="text-[11.5px] text-slate-200 leading-snug flex-1 relative z-10 group-hover:text-white transition-colors duration-300 line-clamp-3">
                 {feature.desc}
               </p>
 
-              <div className="mt-8 flex justify-between items-center relative z-10">
-                <span className="text-xs font-semibold text-[#7c3aed] opacity-0 group-hover:opacity-100 transition-opacity duration-300 -translate-x-4 group-hover:translate-x-0 transform">
-                  Learn more
+              <div className="mt-3 flex justify-between items-center relative z-10 pt-3 border-t border-white/10">
+                <span className="text-[9px] font-bold text-purple-400/0 group-hover:text-purple-300 transition-all duration-300 uppercase tracking-widest">
+                  Deploy Now
                 </span>
-                <div className="w-10 h-10 rounded-full bg-[#111526] border border-[var(--border)] flex items-center justify-center group-hover:bg-[#8b5cf6] transition-colors group-hover:shadow-[0_0_15px_rgba(124,58,237,0.4)]">
-                  <ArrowRight className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-white transition-colors" />
+                <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center group-hover:bg-purple-500 transition-all duration-300 shadow-[0_0_10px_rgba(147,51,234,0.2)]">
+                  <ArrowRight className="w-4 h-4 text-white" />
                 </div>
               </div>
             </motion.div>
