@@ -34,7 +34,10 @@ const EnvSchema = z.object({
   ZERO_G_API_KEY: z.string().optional(),
   ZERO_G_API_URL: z.string().url().optional(),
 
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required — add it to your .env"),
+  DATABASE_URL: z
+    .string()
+    .optional()
+    .default("postgresql://postgres:password@localhost:5432/0gpilot"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
 
   VECTOR_SIMILARITY_THRESHOLD: z
