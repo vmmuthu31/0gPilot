@@ -1,5 +1,7 @@
 import { zeroGStorageService } from "@/services/zeroG.service";
 
+import { agentFail, agentOk, type AgentResult } from "@/types/agent.types";
+
 export interface MemoryAgentInput {
   projectId: string;
 
@@ -16,21 +18,24 @@ export interface MemoryAgentInput {
   deployment?: string;
 }
 
-export interface MemoryAgentResult {
-  success: boolean;
-
-  rootHash?: string;
-
-  txHash?: string;
-
-  error?: string;
-}
+export type MemoryAgentResult = AgentResult<{
+  rootHash: string;
+  txHash: string;
+}>;
 
 class MemoryAgent {
   async storeWorkflowMemory(
     input: MemoryAgentInput,
   ): Promise<MemoryAgentResult> {
     try {
+      if (!input.projectId.trim()) {
+        return agentFail("INVALID_INPUT", "No projectId provided");
+      }
+
+      if (!input.prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
       const response = await zeroGStorageService.uploadJSON({
         type: "workflow-memory",
 
@@ -52,33 +57,48 @@ class MemoryAgent {
       });
 
       if (!response.success) {
-        return {
-          success: false,
-          error: response.error || "Memory storage failed",
-        };
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          response.error || "Memory storage failed",
+          undefined,
+          response,
+        );
       }
 
-      return {
-        success: true,
+      const rootHash = response.rootHash;
+      const txHash = response.txHash;
 
-        rootHash: response.rootHash,
+      if (!rootHash || !txHash) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          "Storage response missing rootHash/txHash",
+          response,
+        );
+      }
 
-        txHash: response.txHash,
-      };
+      return agentOk({ rootHash, txHash }, response);
     } catch (error: unknown) {
       console.error("Memory Agent Error:", error);
 
-      return {
-        success: false,
-
-        error: error instanceof Error ? error.message : "Memory agent failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Memory agent failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async storeFrontend(projectId: string, frontend: string) {
+  async storeFrontend(
+    projectId: string,
+    frontend: string,
+  ): Promise<MemoryAgentResult> {
     try {
-      return await zeroGStorageService.uploadJSON({
+      if (!projectId.trim()) {
+        return agentFail("INVALID_INPUT", "No projectId provided");
+      }
+
+      const response = await zeroGStorageService.uploadJSON({
         type: "frontend",
 
         timestamp: Date.now(),
@@ -87,20 +107,50 @@ class MemoryAgent {
 
         frontend,
       });
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          response.error || "Frontend storage failed",
+          undefined,
+          response,
+        );
+      }
+
+      const rootHash = response.rootHash;
+      const txHash = response.txHash;
+
+      if (!rootHash || !txHash) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          "Storage response missing rootHash/txHash",
+          response,
+        );
+      }
+
+      return agentOk({ rootHash, txHash }, response);
     } catch (error: unknown) {
       console.error(error);
 
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Frontend storage failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Frontend storage failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async storeContracts(projectId: string, contracts: string) {
+  async storeContracts(
+    projectId: string,
+    contracts: string,
+  ): Promise<MemoryAgentResult> {
     try {
-      return await zeroGStorageService.uploadJSON({
+      if (!projectId.trim()) {
+        return agentFail("INVALID_INPUT", "No projectId provided");
+      }
+
+      const response = await zeroGStorageService.uploadJSON({
         type: "contracts",
 
         timestamp: Date.now(),
@@ -109,20 +159,50 @@ class MemoryAgent {
 
         contracts,
       });
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          response.error || "Contract storage failed",
+          undefined,
+          response,
+        );
+      }
+
+      const rootHash = response.rootHash;
+      const txHash = response.txHash;
+
+      if (!rootHash || !txHash) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          "Storage response missing rootHash/txHash",
+          response,
+        );
+      }
+
+      return agentOk({ rootHash, txHash }, response);
     } catch (error: unknown) {
       console.error(error);
 
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Contract storage failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Contract storage failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async storeAuditReport(projectId: string, audit: string) {
+  async storeAuditReport(
+    projectId: string,
+    audit: string,
+  ): Promise<MemoryAgentResult> {
     try {
-      return await zeroGStorageService.uploadJSON({
+      if (!projectId.trim()) {
+        return agentFail("INVALID_INPUT", "No projectId provided");
+      }
+
+      const response = await zeroGStorageService.uploadJSON({
         type: "audit-report",
 
         timestamp: Date.now(),
@@ -131,22 +211,50 @@ class MemoryAgent {
 
         audit,
       });
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          response.error || "Audit report storage failed",
+          undefined,
+          response,
+        );
+      }
+
+      const rootHash = response.rootHash;
+      const txHash = response.txHash;
+
+      if (!rootHash || !txHash) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          "Storage response missing rootHash/txHash",
+          response,
+        );
+      }
+
+      return agentOk({ rootHash, txHash }, response);
     } catch (error: unknown) {
       console.error(error);
 
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Audit report storage failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Audit report storage failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async storeDeployment(projectId: string, deployment: unknown) {
+  async storeDeployment(
+    projectId: string,
+    deployment: unknown,
+  ): Promise<MemoryAgentResult> {
     try {
-      return await zeroGStorageService.uploadJSON({
+      if (!projectId.trim()) {
+        return agentFail("INVALID_INPUT", "No projectId provided");
+      }
+
+      const response = await zeroGStorageService.uploadJSON({
         type: "deployment",
 
         timestamp: Date.now(),
@@ -155,14 +263,37 @@ class MemoryAgent {
 
         deployment,
       });
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          response.error || "Deployment storage failed",
+          undefined,
+          response,
+        );
+      }
+
+      const rootHash = response.rootHash;
+      const txHash = response.txHash;
+
+      if (!rootHash || !txHash) {
+        return agentFail(
+          "UPSTREAM_STORAGE_FAILED",
+          "Storage response missing rootHash/txHash",
+          response,
+        );
+      }
+
+      return agentOk({ rootHash, txHash }, response);
     } catch (error: unknown) {
       console.error(error);
 
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Deployment storage failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Deployment storage failed",
+        undefined,
+        error,
+      );
     }
   }
 

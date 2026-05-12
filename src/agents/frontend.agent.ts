@@ -2,25 +2,23 @@ import { computeService } from "@/services/compute.service";
 
 import { FRONTEND_SYSTEM_PROMPT } from "@/prompts/frontend.prompt";
 
+import { agentFail, agentOk, type AgentResult } from "@/types/agent.types";
+
 export interface FrontendAgentInput {
   prompt: string;
 
   architecture?: string;
 }
 
-export interface FrontendAgentResult {
-  success: boolean;
-
-  code?: string;
-
-  raw?: unknown;
-
-  error?: string;
-}
+export type FrontendAgentResult = AgentResult<{ code: string }>;
 
 class FrontendAgent {
   async execute(input: FrontendAgentInput): Promise<FrontendAgentResult> {
     try {
+      if (!input.prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
       const response = await computeService.chat(
         [
           {
@@ -46,30 +44,23 @@ ${input.architecture || ""}
       );
 
       if (!response.success) {
-        return {
-          success: false,
-          error: response.error || "Frontend generation failed",
-        };
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Frontend generation failed",
+          undefined,
+          response,
+        );
       }
 
-      return {
-        success: true,
-
-        code: response.content || "",
-
-        raw: response,
-      };
+      return agentOk({ code: response.content || "" }, response);
     } catch (error: unknown) {
       console.error("Frontend Agent Error:", error);
       const message =
         error instanceof Error
           ? error.message
           : "Frontend agent execution failed";
-      return {
-        success: false,
 
-        error: message,
-      };
+      return agentFail("INTERNAL_ERROR", message, undefined, error);
     }
   }
 }

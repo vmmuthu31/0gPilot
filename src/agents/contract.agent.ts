@@ -2,25 +2,23 @@ import { computeService } from "@/services/compute.service";
 
 import { CONTRACT_SYSTEM_PROMPT } from "@/prompts/contract.prompt";
 
+import { agentFail, agentOk, type AgentResult } from "@/types/agent.types";
+
 export interface ContractAgentInput {
   prompt: string;
 
   architecture?: string;
 }
 
-export interface ContractAgentResult {
-  success: boolean;
-
-  contracts?: string;
-
-  raw?: unknown;
-
-  error?: string;
-}
+export type ContractAgentResult = AgentResult<{ contracts: string }>;
 
 class ContractAgent {
   async execute(input: ContractAgentInput): Promise<ContractAgentResult> {
     try {
+      if (!input.prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
       const response = await computeService.chat(
         [
           {
@@ -46,27 +44,24 @@ ${input.architecture || ""}
       );
 
       if (!response.success) {
-        return {
-          success: false,
-          error: response.error || "Contract generation failed",
-        };
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Contract generation failed",
+          undefined,
+          response,
+        );
       }
 
-      return {
-        success: true,
-
-        contracts: response.content || "",
-
-        raw: response,
-      };
+      return agentOk({ contracts: response.content || "" }, response);
     } catch (error: unknown) {
       console.error("Contract Agent Error:", error);
 
-      return {
-        success: false,
-
-        error: error instanceof Error ? error.message : "Contract agent failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Contract agent failed",
+        undefined,
+        error,
+      );
     }
   }
 }

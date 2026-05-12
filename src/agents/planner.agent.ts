@@ -7,23 +7,21 @@ import {
   PLANNER_SYSTEM_PROMPT,
 } from "@/prompts/planner.prompt";
 
+import { agentFail, agentOk, type AgentResult } from "@/types/agent.types";
+
 export interface PlannerAgentInput {
   prompt: string;
 }
 
-export interface PlannerAgentResult {
-  success: boolean;
-
-  architecture?: string;
-
-  raw?: unknown;
-
-  error?: string;
-}
+export type PlannerAgentResult = AgentResult<{ architecture: string }>;
 
 class PlannerAgent {
   async execute(input: PlannerAgentInput): Promise<PlannerAgentResult> {
     try {
+      if (!input.prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
       const response = await computeService.chat(
         [
           {
@@ -48,35 +46,34 @@ ${input.prompt}
       );
 
       if (!response.success) {
-        return {
-          success: false,
-          error: response.error || "Planner agent failed",
-        };
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Planner agent failed",
+          undefined,
+          response,
+        );
       }
 
-      return {
-        success: true,
-
-        architecture: response.content || "",
-
-        raw: response as unknown,
-      };
+      return agentOk({ architecture: response.content || "" }, response);
     } catch (error: unknown) {
       console.error("Planner Agent Error:", error);
       const message =
         error instanceof Error
           ? error.message
           : "Planner agent execution failed";
-      return {
-        success: false,
 
-        error: message || "Planner agent execution failed",
-      };
+      return agentFail("INTERNAL_ERROR", message || "Planner agent failed");
     }
   }
 
-  async generateStructuredPlan(prompt: string) {
+  async generateStructuredPlan(
+    prompt: string,
+  ): Promise<AgentResult<{ json: string }>> {
     try {
+      if (!prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
       const response = await computeService.chat(
         [
           {
@@ -95,23 +92,40 @@ ${input.prompt}
         },
       );
 
-      return response;
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Structured planning failed",
+          undefined,
+          response,
+        );
+      }
+
+      return agentOk({ json: response.content || "" }, response);
     } catch (error: unknown) {
       console.error(error);
 
       const message =
         error instanceof Error ? error.message : "Structured planner failed";
 
-      return {
-        success: false,
-        error: message || "Structured planner failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        message || "Structured planner failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async generateFolderStructure(prompt: string) {
+  async generateFolderStructure(
+    prompt: string,
+  ): Promise<AgentResult<{ structure: string }>> {
     try {
-      return computeService.chat(
+      if (!prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
+      const response = await computeService.chat(
         [
           {
             role: "system",
@@ -127,23 +141,38 @@ ${input.prompt}
           temperature: 0.3,
         },
       );
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Folder structure generation failed",
+          undefined,
+          response,
+        );
+      }
+
+      return agentOk({ structure: response.content || "" }, response);
     } catch (error: unknown) {
       console.error(error);
 
       const message =
-        error instanceof Error ? error.message : "Structured planner failed";
+        error instanceof Error
+          ? error.message
+          : "Folder structure generation failed";
 
-      return {
-        success: false,
-
-        error: message || "Folder structure generation failed",
-      };
+      return agentFail("INTERNAL_ERROR", message, undefined, error);
     }
   }
 
-  async generateDatabaseDesign(prompt: string) {
+  async generateDatabaseDesign(
+    prompt: string,
+  ): Promise<AgentResult<{ design: string }>> {
     try {
-      return computeService.chat(
+      if (!prompt.trim()) {
+        return agentFail("INVALID_INPUT", "No prompt provided");
+      }
+
+      const response = await computeService.chat(
         [
           {
             role: "system",
@@ -159,17 +188,26 @@ ${input.prompt}
           temperature: 0.2,
         },
       );
+
+      if (!response.success) {
+        return agentFail(
+          "UPSTREAM_COMPUTE_FAILED",
+          response.error || "Database architecture generation failed",
+          undefined,
+          response,
+        );
+      }
+
+      return agentOk({ design: response.content || "" }, response);
     } catch (error: unknown) {
       console.error(error);
 
       const message =
-        error instanceof Error ? error.message : "Structured planner failed";
+        error instanceof Error
+          ? error.message
+          : "Database architecture generation failed";
 
-      return {
-        success: false,
-
-        error: message || "Database architecture generation failed",
-      };
+      return agentFail("INTERNAL_ERROR", message, undefined, error);
     }
   }
 }
