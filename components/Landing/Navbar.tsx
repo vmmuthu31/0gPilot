@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { DiGithub } from "react-icons/di";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const Navbar = () => (
   <motion.nav
@@ -54,11 +55,7 @@ const Navbar = () => (
           Star on GitHub
         </Button>
 
-        <Button
-          className="px-5 text-sm bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white rounded-lg hover:opacity-90 transition-opacity font-medium border-0 shadow-[0_0_15px_rgba(124,58,237,0.3)]"
-        >
-          Launch App
-        </Button>
+        <ConnectButton />
       </div>
     </div>
   </motion.nav>

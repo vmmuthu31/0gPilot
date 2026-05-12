@@ -6,12 +6,24 @@ import path from "path";
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.20",
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      evmVersion: "cancun",
+      optimizer: { enabled: true, runs: 200 },
+    },
+  },
   networks: {
-    zeroG: {
+    testnet: {
       url: process.env.NEXT_PUBLIC_0G_RPC_URL || "https://evmrpc-testnet.0g.ai",
-      accounts: process.env.ZERO_G_PRIVATE_KEY ? [process.env.ZERO_G_PRIVATE_KEY] : [],
-    }
+      chainId: 16602,
+      ...(process.env.ZERO_G_PRIVATE_KEY ? { accounts: [process.env.ZERO_G_PRIVATE_KEY] } : {})
+    },
+    mainnet: {
+      url: "https://evmrpc.0g.ai",
+      chainId: 16661,
+      ...(process.env.ZERO_G_PRIVATE_KEY ? { accounts: [process.env.ZERO_G_PRIVATE_KEY] } : {})
+    },
   }
 };
 
