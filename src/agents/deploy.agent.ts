@@ -43,6 +43,7 @@ ${input.contracts || ""}
           },
         ],
         {
+          task: "deploy",
           temperature: 0.3,
           max_tokens: 5000,
         },
