@@ -30,6 +30,7 @@ class AuditAgent {
           },
         ],
         {
+          task: "audit",
           temperature: 0.2,
           max_tokens: 4000,
         },

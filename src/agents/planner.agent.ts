@@ -39,9 +39,9 @@ ${input.prompt}
           },
         ],
         {
+          task: "planner",
           temperature: 0.3,
           max_tokens: 5000,
-          model: "qwen/qwen-2.5-7b-instruct",
         },
       );
 
@@ -87,6 +87,7 @@ ${input.prompt}
           },
         ],
         {
+          task: "planner",
           temperature: 0.2,
           max_tokens: 3000,
         },
@@ -138,6 +139,7 @@ ${input.prompt}
           },
         ],
         {
+          task: "planner",
           temperature: 0.3,
         },
       );
@@ -185,6 +187,7 @@ ${input.prompt}
           },
         ],
         {
+          task: "planner",
           temperature: 0.2,
         },
       );

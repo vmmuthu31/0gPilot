@@ -38,6 +38,7 @@ ${input.architecture || ""}
           },
         ],
         {
+          task: "database",
           temperature: 0.2,
           max_tokens: 4000,
         },

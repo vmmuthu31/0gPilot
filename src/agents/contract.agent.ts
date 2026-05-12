@@ -38,6 +38,7 @@ ${input.architecture || ""}
           },
         ],
         {
+          task: "contract",
           temperature: 0.3,
           max_tokens: 6000,
         },
