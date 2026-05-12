@@ -44,7 +44,7 @@ export function withSecurity<T>(
       if (!parsed.success) {
         return Response.json(
           {
-            error: { code: "VALIDATION_FAILED", message: parsed.error.errors },
+            error: { code: "VALIDATION_FAILED", message: parsed.error.issues },
           },
           { status: 400 },
         );

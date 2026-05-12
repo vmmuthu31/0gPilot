@@ -132,7 +132,7 @@ export async function executeWorkflow(prompt: string, projectId?: string) {
     let finalState: Partial<WorkflowState> | null = null;
     for await (const chunk of stream) {
       const nodeName = Object.keys(chunk)[0];
-      finalState = chunk[nodeName];
+      finalState = (chunk as Record<string, Partial<WorkflowState>>)[nodeName];
       emitWorkflowEvent(pId, `NODE_COMPLETED:${nodeName}`, { status: finalState?.status || "Completed" });
     }
 
