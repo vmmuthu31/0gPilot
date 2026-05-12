@@ -108,7 +108,7 @@ class ZeroGStorageService {
 
   async storeWorkflowMemory(payload: unknown, encrypt = true) {
     const data = WorkflowMemoryManifestSchema.parse(payload);
-    return this.uploadJSON(data, encrypt);
+    return this.uploadJSON(data as Record<string, unknown>, encrypt);
   }
 
   async storePromptVersion(payload: unknown, encrypt = false) {
@@ -131,11 +131,18 @@ class ZeroGStorageService {
     return this.uploadJSON(data);
   }
 
-  async downloadFile(rootHash: string) {
+  async downloadFile(rootHash: string, decrypt = false) {
     try {
-      const [blob, err] = await indexer.downloadToBlob(rootHash, {
-        proof: true,
-      });
+      const options: {
+        proof: boolean;
+        encryption?: { type: "aes256"; key: Uint8Array };
+      } = { proof: true };
+
+      if (decrypt) {
+        options.encryption = { type: "aes256", key: ENCRYPTION_KEY };
+      }
+
+      const [blob, err] = await indexer.downloadToBlob(rootHash, options);
 
       if (err) {
         throw new Error(err.toString());

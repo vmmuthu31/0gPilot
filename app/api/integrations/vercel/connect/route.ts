@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { verifySession, extractBearerToken } from "@/server/auth/session";
 import { db } from "@/db";
 
 export const dynamic = "force-dynamic";
+
+const ConnectSchema = z.object({
+  accessToken: z.string().min(1, "accessToken is required"),
+  teamId: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/, "teamId must be alphanumeric")
+    .optional(),
+});
 
 export async function POST(req: NextRequest) {
   const token = extractBearerToken(req.headers.get("Authorization"));
@@ -22,14 +31,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { code: "BAD_REQUEST" } }, { status: 400 });
   }
 
-  const { accessToken, teamId } = body as { accessToken?: string; teamId?: string };
-
-  if (!accessToken || typeof accessToken !== "string") {
+  const parsed = ConnectSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: { code: "BAD_REQUEST", message: "accessToken is required" } },
-      { status: 400 }
+      { error: { code: "VALIDATION_FAILED", message: parsed.error.issues } },
+      { status: 400 },
     );
   }
+
+  const { accessToken, teamId } = parsed.data;
 
   const vercelRes = await fetch("https://api.vercel.com/v2/user", {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -38,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!vercelRes.ok) {
     return NextResponse.json(
       { error: { code: "INVALID_VERCEL_TOKEN", message: "Could not authenticate with Vercel" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -48,7 +58,7 @@ export async function POST(req: NextRequest) {
     where: { id: session.userId },
     data: {
       vercelToken: accessToken,
-      vercelTeamId: teamId || null,
+      vercelTeamId: teamId ?? null,
     },
   });
 

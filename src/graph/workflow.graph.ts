@@ -8,6 +8,7 @@ import { frontendNode } from "./nodes/frontend.node";
 import { contractNode } from "./nodes/contract.node";
 import { auditNode } from "./nodes/audit.node";
 import { backendNode } from "./nodes/backend.node";
+import { databaseNode } from "./nodes/database.node";
 import { buildJoinNode } from "./nodes/build_join.node";
 import { testingNode } from "./nodes/testing.node";
 import { deployNode } from "./nodes/deploy.node";
@@ -29,6 +30,7 @@ const GraphState = Annotation.Root({
   audit: Annotation<string>(),
   deployment: Annotation<string>(),
   backend: Annotation<string>(),
+  databaseDesign: Annotation<string>(),
   tests: Annotation<string>(),
   analytics: Annotation<string>(),
   memoryHash: Annotation<string>(),
@@ -52,6 +54,7 @@ export function createWorkflow() {
     .addNode("contracts", contractNode)
     .addNode("audit", auditNode)
     .addNode("backend", backendNode)
+    .addNode("database", databaseNode)
     .addNode("build_join", buildJoinNode)
     .addNode("testing", testingNode)
     .addNode("deployment", deployNode)
@@ -67,9 +70,10 @@ export function createWorkflow() {
     .addEdge("validate", "planner")
     .addEdge("planner", "frontend")
     .addEdge("planner", "contracts")
+    .addEdge("planner", "database")
     .addEdge("contracts", "audit")
     .addEdge("contracts", "backend")
-    .addEdge(["frontend", "audit", "backend"], "build_join")
+    .addEdge(["frontend", "audit", "backend", "database"], "build_join")
     .addEdge("build_join", "testing")
     .addConditionalEdges(
       "testing",
@@ -88,18 +92,19 @@ export function createWorkflow() {
 }
 
 export async function executeWorkflow(prompt: string, projectId?: string) {
+  const pId = projectId ?? createProjectId();
+
   try {
     const graph = createWorkflow();
-    const pId = projectId ?? createProjectId();
 
-    await db.project.update({
-      where: { id: pId },
-      data: { status: "RUNNING" },
-    }).catch(() => {});
+    await db.project
+      .update({ where: { id: pId }, data: { status: "RUNNING" } })
+      .catch(() => {});
 
     const stream = await graph.stream({ projectId: pId, prompt });
 
     let finalState: Partial<WorkflowState> | null = null;
+    let cachedUserId: string | null = null;
 
     for await (const chunk of stream) {
       const nodeName = Object.keys(chunk)[0];
@@ -110,39 +115,50 @@ export async function executeWorkflow(prompt: string, projectId?: string) {
         error: finalState?.error,
       });
 
-      await db.execution.create({
-        data: {
-          projectId: pId,
-          userId: (await db.project.findUnique({ where: { id: pId }, select: { userId: true } }))?.userId ?? "",
-          node: nodeName,
-          status: finalState?.error ? "FAILED" : "COMPLETED",
-          log: finalState?.status,
-          error: finalState?.error,
-          completedAt: new Date(),
-        },
-      }).catch(() => {});
+      if (!cachedUserId) {
+        cachedUserId =
+          (
+            await db.project
+              .findUnique({ where: { id: pId }, select: { userId: true } })
+              .catch(() => null)
+          )?.userId ?? null;
+      }
+
+      if (cachedUserId) {
+        await db.execution
+          .create({
+            data: {
+              projectId: pId,
+              userId: cachedUserId,
+              node: nodeName,
+              status: finalState?.error ? "FAILED" : "COMPLETED",
+              log: finalState?.status,
+              error: finalState?.error,
+              completedAt: new Date(),
+            },
+          })
+          .catch(() => {});
+      }
     }
 
     const finalStatus = finalState?.error ? "FAILED" : "COMPLETED";
 
-    await db.project.update({
-      where: { id: pId },
-      data: {
-        status: finalStatus,
-        memoryHash: finalState?.memoryHash,
-      },
-    }).catch(() => {});
+    await db.project
+      .update({
+        where: { id: pId },
+        data: { status: finalStatus, memoryHash: finalState?.memoryHash },
+      })
+      .catch(() => {});
 
     return { success: true, result: finalState };
   } catch (error: unknown) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Workflow execution failed";
 
-    await db.project.update({
-      where: { id: projectId ?? "" },
-      data: { status: "FAILED" },
-    }).catch(() => {});
+    await db.project
+      .update({ where: { id: pId }, data: { status: "FAILED" } })
+      .catch(() => {});
 
-    return { success: false, error: message || "Workflow execution failed" };
+    return { success: false, error: message };
   }
 }

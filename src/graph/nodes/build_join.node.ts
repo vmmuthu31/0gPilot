@@ -4,31 +4,24 @@ export async function buildJoinNode(
   state: WorkflowState,
 ): Promise<Partial<WorkflowState>> {
   if (state.error) {
+    return { status: "FAILED" };
+  }
+
+  const missing: string[] = [];
+
+  if (!state.architecture?.trim()) missing.push("architecture");
+  if (!state.frontend?.trim()) missing.push("frontend");
+  if (!state.contracts?.trim()) missing.push("contracts");
+  if (!state.audit?.trim()) missing.push("audit");
+  if (!state.backend?.trim()) missing.push("backend");
+  if (!state.databaseDesign?.trim()) missing.push("databaseDesign");
+
+  if (missing.length > 0) {
     return {
+      error: `Build join missing required outputs: ${missing.join(", ")}`,
       status: "FAILED",
     };
   }
 
-  const hasArchitecture = !!state.architecture?.trim();
-  const hasFrontend = !!state.frontend?.trim();
-  const hasContracts = !!state.contracts?.trim();
-  const hasAudit = !!state.audit?.trim();
-  const hasBackend = !!state.backend?.trim();
-
-  if (
-    !hasArchitecture ||
-    !hasFrontend ||
-    !hasContracts ||
-    !hasAudit ||
-    !hasBackend
-  ) {
-    return {
-      error: "Build join missing required outputs",
-      status: "FAILED",
-    };
-  }
-
-  return {
-    status: "Joined",
-  };
+  return { status: "Joined" };
 }

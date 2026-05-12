@@ -1,9 +1,8 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
+import { env } from "@/server/config/env";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "0gpilot-dev-jwt-secret-change-in-production-32chars"
-);
+const JWT_SECRET = new TextEncoder().encode(env.JWT_SECRET);
 
 const JWT_EXPIRY = "7d";
 

@@ -11,9 +11,9 @@ export interface WorkflowState {
 
   audit?: string;
 
-  deployment?: string;
-
   backend?: string;
+
+  databaseDesign?: string;
 
   tests?: string;
 

@@ -294,10 +294,9 @@ class MemoryAgent {
 
   async loadMemory(rootHash: string) {
     try {
-      return await zeroGStorageService.downloadFile(rootHash);
+      return await zeroGStorageService.downloadFile(rootHash, true);
     } catch (error: unknown) {
       console.error(error);
-
       return null;
     }
   }
