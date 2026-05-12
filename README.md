@@ -90,7 +90,7 @@ Detect vulnerabilities and optimize contracts automatically.
 
 ## Agentic Web3 Infrastructure
 
-OpenClaw-powered orchestration for autonomous AI workflows.
+Designed for OpenClaw-compatible autonomous orchestration workflows using LangGraph-based agent coordination.
 
 ---
 
@@ -101,7 +101,7 @@ OpenClaw-powered orchestration for autonomous AI workflows.
 | 0G Compute | AI inference and orchestration       |
 | 0G Storage | Persistent memory and project states |
 | 0G Chain   | Smart contract deployment            |
-| OpenClaw   | Multi-agent orchestration            |
+| OpenClaw   | Compatible orchestration target      |
 | Agent ID   | Persistent agent identity            |
 
 ---
@@ -266,7 +266,7 @@ F --> G[0G Chain Contracts]
 | Backend            | Node.js, Express.js         |
 | Smart Contracts    | Solidity, Hardhat           |
 | Wallet Integration | Wagmi, Ethers.js            |
-| AI Orchestration   | OpenClaw, LangChain         |
+| AI Orchestration   | LangGraph (OpenClaw-compatible) |
 | Charts             | Recharts                    |
 | Database           | 0G Storage                  |
 | Compute            | 0G Compute                  |
@@ -356,7 +356,7 @@ npx hardhat run scripts/deploy.ts --network zeroG
 - Autonomous multi-agent orchestration
 - AI workflow coordination
 - Persistent memory systems
-- OpenClaw integration
+- OpenClaw-compatible workflow design
 
 ## Track 2 — Agentic Trading Arena
 
