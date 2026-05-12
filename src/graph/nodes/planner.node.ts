@@ -1,5 +1,7 @@
 import { plannerAgent } from "@/agents/planner.agent";
 
+import { retryAgentResult } from "@/graph/retry";
+
 import { WorkflowState } from "../state";
 
 export async function plannerNode(
@@ -8,9 +10,19 @@ export async function plannerNode(
   try {
     console.log("Executing Planner Node...");
 
-    const result = await plannerAgent.execute({
-      prompt: state.prompt,
-    });
+    if (state.error) {
+      return {
+        status: "Planner Skipped",
+      };
+    }
+
+    const result = await retryAgentResult(
+      () =>
+        plannerAgent.execute({
+          prompt: state.prompt,
+        }),
+      { retryCodes: ["UPSTREAM_COMPUTE_FAILED"] },
+    );
 
     if (!result.success) {
       return {

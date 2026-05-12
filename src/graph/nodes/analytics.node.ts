@@ -1,52 +1,46 @@
-import { frontendAgent } from "@/agents/frontend.agent";
+import { analyticsAgent } from "@/agents/analytics.agent";
 
 import { retryAgentResult } from "@/graph/retry";
 
 import { WorkflowState } from "../state";
 
-export async function frontendNode(
+export async function analyticsNode(
   state: WorkflowState,
 ): Promise<Partial<WorkflowState>> {
   try {
-    console.log("Executing Frontend Node...");
-
     if (state.error) {
       return {
-        status: "Frontend Skipped",
+        status: "Analytics Skipped",
       };
     }
 
     const result = await retryAgentResult(
       () =>
-        frontendAgent.execute({
+        analyticsAgent.execute({
           prompt: state.prompt,
-
           architecture: state.architecture,
+          deployment: state.deployment,
         }),
       { retryCodes: ["UPSTREAM_COMPUTE_FAILED"] },
     );
 
     if (!result.success) {
       return {
-        error: result.error.message || "Frontend generation failed",
-
+        error: result.error.message || "Analytics output generation failed",
         status: "FAILED",
       };
     }
 
     return {
-      frontend: result.data.code || "",
-
-      status: "Frontend Generated",
+      analytics: result.data.analytics || "",
+      status: "Analytics Generated",
     };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Frontend node execution failed";
-    console.error(message);
-
     return {
-      error: message || "Frontend node execution failed",
-
+      error:
+        error instanceof Error
+          ? error.message
+          : "Analytics node execution failed",
       status: "FAILED",
     };
   }

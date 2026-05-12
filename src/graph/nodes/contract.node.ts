@@ -1,4 +1,6 @@
 import { contractAgent } from "@/agents/contract.agent";
+
+import { retryAgentResult } from "@/graph/retry";
 import { WorkflowState } from "../state";
 
 export async function contractNode(
@@ -7,11 +9,21 @@ export async function contractNode(
   try {
     console.log("Executing Contract Node...");
 
-    const result = await contractAgent.execute({
-      prompt: state.prompt,
+    if (state.error) {
+      return {
+        status: "Contracts Skipped",
+      };
+    }
 
-      architecture: state.architecture,
-    });
+    const result = await retryAgentResult(
+      () =>
+        contractAgent.execute({
+          prompt: state.prompt,
+
+          architecture: state.architecture,
+        }),
+      { retryCodes: ["UPSTREAM_COMPUTE_FAILED"] },
+    );
 
     if (!result.success) {
       return {

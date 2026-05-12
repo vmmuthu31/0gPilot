@@ -1,4 +1,6 @@
 import { auditAgent } from "@/agents/audit.agent";
+
+import { retryAgentResult } from "@/graph/retry";
 import { WorkflowState } from "../state";
 
 export async function auditNode(
@@ -7,9 +9,19 @@ export async function auditNode(
   try {
     console.log("Executing Audit Node...");
 
-    const result = await auditAgent.execute({
-      contracts: state.contracts || "",
-    });
+    if (state.error) {
+      return {
+        status: "Audit Skipped",
+      };
+    }
+
+    const result = await retryAgentResult(
+      () =>
+        auditAgent.execute({
+          contracts: state.contracts || "",
+        }),
+      { retryCodes: ["UPSTREAM_COMPUTE_FAILED"] },
+    );
 
     if (!result.success) {
       return {
