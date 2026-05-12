@@ -279,13 +279,17 @@ F --> G[0G Chain Contracts]
 
 ```bash
 0gpilot/
-├── frontend/
-├── backend/
-├── contracts/
-├── agents/
-├── deployment/
-├── docs/
-├── scripts/
+├── app/                  # Next.js App Router frontend & API routes
+├── components/           # React components (Landing, UI)
+├── src/
+│   ├── agents/           # LangChain AI agents
+│   ├── chains/           # Hardhat smart contracts and scripts
+│   ├── graph/            # LangGraph workflow orchestration
+│   ├── prompts/          # System prompts for agents
+│   ├── server/           # Backend queue, security, and jobs
+│   ├── services/         # Integrations (0G Compute, Storage, Chain)
+│   ├── shared/           # Zod schemas and shared types
+│   └── types/            # TypeScript interfaces
 └── README.md
 ```
 
@@ -303,7 +307,7 @@ cd 0gpilot
 ## Install Dependencies
 
 ```bash
-npm install
+bun install
 ```
 
 ## Configure Environment
@@ -312,37 +316,35 @@ npm install
 cp .env.example .env
 ```
 
-Add the following environment variables:
+Add the following environment variables in your `.env` file:
 
-- OpenAI API Key
-- 0G RPC URL
-- Wallet Private Key
-- Storage Credentials
-
----
-
-# Run Frontend
-
-```bash
-cd frontend
-npm run dev
-```
+- `ZERO_G_API_KEY`: API key for 0G Compute (OpenAI-compatible)
+- `ZERO_G_API_URL`: Base URL for 0G Compute
+- `NEXT_PUBLIC_0G_RPC_URL`: 0G Chain RPC URL (e.g., https://evmrpc-testnet.0g.ai)
+- `NEXT_PUBLIC_0G_INDEXER_RPC`: 0G Storage Indexer RPC
+- `ZERO_G_PRIVATE_KEY`: Private key for wallet interactions/deployments
+- `STORAGE_ENCRYPTION_KEY`: Secret string for encrypting 0G Storage data
+- `API_SECRET_KEY`: Secret used for authenticating backend API calls
 
 ---
 
-# Run Backend
+# Run the Application
+
+The entire stack (frontend and backend APIs) runs via a single Next.js server.
 
 ```bash
-cd backend
-npm run dev
+bun run dev
 ```
 
 ---
 
 # Deploy Contracts
 
+To manually deploy the core registry contracts to the 0G testnet:
+
 ```bash
-npx hardhat run scripts/deploy.ts --network 0g
+cd src/chains
+npx hardhat run scripts/deploy.ts --network zeroG
 ```
 
 ---

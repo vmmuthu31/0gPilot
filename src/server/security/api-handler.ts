@@ -51,7 +51,6 @@ export function withSecurity<T>(
         );
       }
 
-      // 4. Prompt Injection / Moderation Check
       if (
         typeof parsed.data === "object" &&
         parsed.data !== null &&
