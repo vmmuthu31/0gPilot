@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { DiGithub } from "react-icons/di";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { FaGithub } from "react-icons/fa";
 
 const Navbar = () => (
   <motion.nav
@@ -56,7 +56,7 @@ const Navbar = () => (
           size="sm"
           className="hidden sm:flex items-center gap-2 rounded-xl px-4 text-white/80 hover:text-white"
         >
-          <DiGithub className="w-4 h-4" />
+          <FaGithub className="w-4 h-4" />
           Star on GitHub
         </Button>
 
