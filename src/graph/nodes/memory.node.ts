@@ -20,6 +20,11 @@ export async function memoryNode(
           contracts: state.contracts,
           audit: state.audit,
           deployment: state.deployment,
+          backend: state.backend,
+          tests: state.tests,
+          analytics: state.analytics,
+          status: state.status,
+          error: state.error,
         }),
       { retryCodes: ["UPSTREAM_STORAGE_FAILED"] },
     );

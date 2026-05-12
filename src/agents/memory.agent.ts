@@ -16,6 +16,16 @@ export interface MemoryAgentInput {
   audit?: string;
 
   deployment?: string;
+
+  backend?: string;
+
+  tests?: string;
+
+  analytics?: string;
+
+  status?: string;
+
+  error?: string;
 }
 
 export type MemoryAgentResult = AgentResult<{
@@ -54,6 +64,16 @@ class MemoryAgent {
         audit: input.audit,
 
         deployment: input.deployment,
+
+        backend: input.backend,
+
+        tests: input.tests,
+
+        analytics: input.analytics,
+
+        status: input.status,
+
+        error: input.error,
       });
 
       if (!response.success) {

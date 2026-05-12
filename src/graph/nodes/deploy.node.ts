@@ -1,5 +1,7 @@
 import { deployAgent } from "@/agents/deploy.agent";
 
+import { retryAgentResult } from "@/graph/retry";
+
 import { WorkflowState } from "../state";
 
 export async function deployNode(
@@ -8,13 +10,23 @@ export async function deployNode(
   try {
     console.log("Executing Deployment Node...");
 
-    const result = await deployAgent.execute({
-      prompt: state.prompt,
+    if (state.error) {
+      return {
+        status: "Deployment Skipped",
+      };
+    }
 
-      architecture: state.architecture,
+    const result = await retryAgentResult(
+      () =>
+        deployAgent.execute({
+          prompt: state.prompt,
 
-      contracts: state.contracts,
-    });
+          architecture: state.architecture,
+
+          contracts: state.contracts,
+        }),
+      { retryCodes: ["UPSTREAM_COMPUTE_FAILED"] },
+    );
 
     if (!result.success) {
       return {

@@ -1,12 +1,23 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 
+import { validateNode } from "./nodes/validate.node";
 import { plannerNode } from "./nodes/planner.node";
 import { frontendNode } from "./nodes/frontend.node";
 import { contractNode } from "./nodes/contract.node";
 import { auditNode } from "./nodes/audit.node";
+import { backendNode } from "./nodes/backend.node";
+import { buildJoinNode } from "./nodes/build_join.node";
+import { testingNode } from "./nodes/testing.node";
 import { deployNode } from "./nodes/deploy.node";
+import { deploySkippedNode } from "./nodes/deploy_skipped.node";
+import { analyticsNode } from "./nodes/analytics.node";
+import { memoryNode } from "./nodes/memory.node";
+
+import { WorkflowState } from "./state";
 
 const GraphState = Annotation.Root({
+  projectId: Annotation<string>(),
+
   prompt: Annotation<string>(),
 
   architecture: Annotation<string>(),
@@ -19,13 +30,32 @@ const GraphState = Annotation.Root({
 
   deployment: Annotation<string>(),
 
+  backend: Annotation<string>(),
+
+  tests: Annotation<string>(),
+
+  analytics: Annotation<string>(),
+
+  memoryHash: Annotation<string>(),
+
   status: Annotation<string>(),
 
   error: Annotation<string>(),
 });
 
+function createProjectId(): string {
+  const maybeCrypto = globalThis.crypto;
+  if (maybeCrypto?.randomUUID) {
+    return maybeCrypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function createWorkflow() {
   const workflow = new StateGraph(GraphState)
+
+    .addNode("validate", validateNode)
 
     .addNode("planner", plannerNode)
 
@@ -35,9 +65,23 @@ export function createWorkflow() {
 
     .addNode("audit", auditNode)
 
+    .addNode("backend", backendNode)
+
+    .addNode("build_join", buildJoinNode)
+
+    .addNode("testing", testingNode)
+
     .addNode("deployment", deployNode)
 
-    .addEdge(START, "planner")
+    .addNode("deployment_skipped", deploySkippedNode)
+
+    .addNode("analytics", analyticsNode)
+
+    .addNode("memory", memoryNode)
+
+    .addEdge(START, "validate")
+
+    .addEdge("validate", "planner")
 
     .addEdge("planner", "frontend")
 
@@ -45,20 +89,36 @@ export function createWorkflow() {
 
     .addEdge("contracts", "audit")
 
-    .addEdge("frontend", "deployment")
+    .addEdge("contracts", "backend")
 
-    .addEdge("audit", "deployment")
+    .addEdge(["frontend", "audit", "backend"], "build_join")
 
-    .addEdge("deployment", END);
+    .addEdge("build_join", "testing")
+
+    .addConditionalEdges(
+      "testing",
+      (state: WorkflowState) =>
+        state.error ? "deployment_skipped" : "deployment",
+      ["deployment", "deployment_skipped"],
+    )
+
+    .addEdge("deployment", "analytics")
+
+    .addEdge("deployment_skipped", "analytics")
+
+    .addEdge("analytics", "memory")
+
+    .addEdge("memory", END);
 
   return workflow.compile();
 }
 
-export async function executeWorkflow(prompt: string) {
+export async function executeWorkflow(prompt: string, projectId?: string) {
   try {
     const graph = createWorkflow();
 
     const result = await graph.invoke({
+      projectId: projectId ?? createProjectId(),
       prompt,
     });
 
