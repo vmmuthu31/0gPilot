@@ -95,7 +95,7 @@ class MemoryService {
 
   async saveDeployment(
     projectId: string,
-    deployment: unknown,
+    deployment: { contractAddress: string; txHash: string; network?: string },
   ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     return memoryAgent.storeDeployment(projectId, deployment);
   }

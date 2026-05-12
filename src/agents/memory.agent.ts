@@ -46,33 +46,20 @@ class MemoryAgent {
         return agentFail("INVALID_INPUT", "No prompt provided");
       }
 
-      const response = await zeroGStorageService.uploadJSON({
+      const response = await zeroGStorageService.storeWorkflowMemory({
         type: "workflow-memory",
-
         timestamp: Date.now(),
-
         projectId: input.projectId,
-
         prompt: input.prompt,
-
         architecture: input.architecture,
-
         frontend: input.frontend,
-
         contracts: input.contracts,
-
         audit: input.audit,
-
         deployment: input.deployment,
-
         backend: input.backend,
-
         tests: input.tests,
-
         analytics: input.analytics,
-
         status: input.status,
-
         error: input.error,
       });
 
@@ -118,14 +105,11 @@ class MemoryAgent {
         return agentFail("INVALID_INPUT", "No projectId provided");
       }
 
-      const response = await zeroGStorageService.uploadJSON({
-        type: "frontend",
-
+      const response = await zeroGStorageService.storeGeneratedFiles({
+        type: "generated-files",
         timestamp: Date.now(),
-
         projectId,
-
-        frontend,
+        files: { frontend },
       });
 
       if (!response.success) {
@@ -170,14 +154,11 @@ class MemoryAgent {
         return agentFail("INVALID_INPUT", "No projectId provided");
       }
 
-      const response = await zeroGStorageService.uploadJSON({
-        type: "contracts",
-
+      const response = await zeroGStorageService.storeGeneratedFiles({
+        type: "generated-files",
         timestamp: Date.now(),
-
         projectId,
-
-        contracts,
+        files: { contracts },
       });
 
       if (!response.success) {
@@ -222,14 +203,11 @@ class MemoryAgent {
         return agentFail("INVALID_INPUT", "No projectId provided");
       }
 
-      const response = await zeroGStorageService.uploadJSON({
+      const response = await zeroGStorageService.storeAuditReport({
         type: "audit-report",
-
         timestamp: Date.now(),
-
         projectId,
-
-        audit,
+        report: audit,
       });
 
       if (!response.success) {
@@ -267,21 +245,18 @@ class MemoryAgent {
 
   async storeDeployment(
     projectId: string,
-    deployment: unknown,
+    deployment: { contractAddress: string; txHash: string; network?: string },
   ): Promise<MemoryAgentResult> {
     try {
       if (!projectId.trim()) {
         return agentFail("INVALID_INPUT", "No projectId provided");
       }
 
-      const response = await zeroGStorageService.uploadJSON({
+      const response = await zeroGStorageService.storeDeployment({
         type: "deployment",
-
         timestamp: Date.now(),
-
         projectId,
-
-        deployment,
+        ...deployment,
       });
 
       if (!response.success) {

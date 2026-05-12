@@ -26,6 +26,8 @@
       "@/services/*": ["src/services/*"],
       "@/types/*": ["src/types/*"],
       "@/utils/*": ["src/utils/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@/server/*": ["src/server/*"],
       "@/*": ["./*"]
     }
   },
