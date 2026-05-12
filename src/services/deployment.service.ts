@@ -1,10 +1,10 @@
+import "server-only";
 import { ethers } from "ethers";
+import { env } from "@/server/config/env";
 
-const RPC_URL = "https://evmrpc-testnet.0g.ai";
+const provider = new ethers.JsonRpcProvider(env.NEXT_PUBLIC_0G_RPC_URL);
 
-const provider = new ethers.JsonRpcProvider(RPC_URL);
-
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+const wallet = new ethers.Wallet(env.ZERO_G_PRIVATE_KEY, provider);
 
 class DeploymentService {
   async deployContract(

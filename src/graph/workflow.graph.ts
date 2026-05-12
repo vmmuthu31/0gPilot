@@ -1,4 +1,5 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
+import { emitWorkflowEvent } from "@/server/events/emitter";
 
 import { validateNode } from "./nodes/validate.node";
 import { plannerNode } from "./nodes/planner.node";
@@ -121,16 +122,23 @@ export function createWorkflow() {
 export async function executeWorkflow(prompt: string, projectId?: string) {
   try {
     const graph = createWorkflow();
+    const pId = projectId ?? createProjectId();
 
-    const result = await graph.invoke({
-      projectId: projectId ?? createProjectId(),
+    const stream = await graph.stream({
+      projectId: pId,
       prompt,
     });
 
+    let finalState: Partial<WorkflowState> | null = null;
+    for await (const chunk of stream) {
+      const nodeName = Object.keys(chunk)[0];
+      finalState = chunk[nodeName];
+      emitWorkflowEvent(pId, `NODE_COMPLETED:${nodeName}`, { status: finalState?.status || "Completed" });
+    }
+
     return {
       success: true,
-
-      result,
+      result: finalState,
     };
   } catch (error: unknown) {
     console.error(error);

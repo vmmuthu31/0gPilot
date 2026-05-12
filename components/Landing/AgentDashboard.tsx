@@ -55,17 +55,39 @@ export const AgentDashboard = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [prompt, setPrompt] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [isBuilding, setIsBuilding] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const stepInterval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % (agents.length + 1));
-    }, 4000);
+    if (!projectId) return;
 
-    return () => {
-      clearInterval(stepInterval);
+    const sse = new EventSource(`/api/stream?projectId=${projectId}`);
+
+    sse.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.status?.startsWith("NODE_COMPLETED:")) {
+          const nodeName = data.status.split(":")[1];
+          const index = agents.findIndex(a => a.name.toLowerCase().includes(nodeName.toLowerCase().replace('_', '')) || a.name.toLowerCase().includes(nodeName.toLowerCase().split(' ')[0]));
+          if (index !== -1) {
+            setActiveStep(index + 1);
+          }
+        } else if (data.status === "COMPLETED") {
+          setActiveStep(agents.length);
+          setIsBuilding(false);
+          sse.close();
+        } else if (data.status === "FAILED") {
+          setIsBuilding(false);
+          sse.close();
+        }
+      } catch {
+        console.log("error parsing event data")
+      }
     };
-  }, []);
+
+    return () => sse.close();
+  }, [projectId]);
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
@@ -146,7 +168,26 @@ export const AgentDashboard = () => {
                     <Maximize2 className="w-4 h-4" />
                   </button>
                 </div>
-                <button className="p-2.5 rounded-xl bg-[#7C3AED] text-white shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105 transition-transform active:scale-95">
+                <button 
+                  onClick={async () => {
+                    if (!prompt.trim() || isBuilding) return;
+                    const pId = Math.random().toString(36).substring(7);
+                    setIsBuilding(true);
+                    setActiveStep(0);
+                    setProjectId(pId);
+                    
+                    await fetch("/api/workflows", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer 0gpilot-dev-key"
+                      },
+                      body: JSON.stringify({ projectId: pId, prompt })
+                    });
+                  }}
+                  className={`p-2.5 rounded-xl ${isBuilding ? 'bg-slate-600' : 'bg-[#7C3AED] shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105'} text-white transition-transform active:scale-95`}
+                  disabled={isBuilding}
+                >
                   <Send className="w-4 h-4 fill-current" />
                 </button>
               </div>

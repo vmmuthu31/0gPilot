@@ -41,14 +41,23 @@ export async function memoryNode(
     }
 
     const memoryHash = result.data.rootHash;
-    const promptHash = crypto.createHash("sha256").update(state.prompt).digest("hex");
-    const executionProof = crypto.createHash("sha256").update(state.architecture || "").digest("hex");
+    const promptHash = crypto
+      .createHash("sha256")
+      .update(state.prompt)
+      .digest("hex");
+    const executionProof = crypto
+      .createHash("sha256")
+      .update(state.architecture || "")
+      .digest("hex");
 
-    // Index vector memory
     await vectorService.indexMemory(projectId, state.prompt, memoryHash);
 
-    // Register on 0G Pilot Registry
-    await chainService.registerExecution(projectId, promptHash, memoryHash, executionProof);
+    await chainService.registerExecution(
+      projectId,
+      promptHash,
+      memoryHash,
+      executionProof,
+    );
 
     return {
       memoryHash,
