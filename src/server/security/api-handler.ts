@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { connection } from "@/server/queue/redis";
+import { checkPromptSafety } from "./moderation";
 
 export function withSecurity<T>(
   schema: z.ZodSchema<T>,
@@ -48,6 +49,29 @@ export function withSecurity<T>(
           },
           { status: 400 },
         );
+      }
+
+      // 4. Prompt Injection / Moderation Check
+      if (
+        typeof parsed.data === "object" &&
+        parsed.data !== null &&
+        "prompt" in parsed.data
+      ) {
+        const promptToModerate = parsed.data.prompt;
+        if (typeof promptToModerate === "string") {
+          const isSafe = await checkPromptSafety(promptToModerate);
+          if (!isSafe) {
+            return Response.json(
+              {
+                error: {
+                  code: "PROMPT_INJECTION",
+                  message: "Malicious or unsafe prompt detected.",
+                },
+              },
+              { status: 400 },
+            );
+          }
+        }
       }
 
       return await handler(parsed.data, req);
