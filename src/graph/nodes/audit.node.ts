@@ -13,14 +13,14 @@ export async function auditNode(
 
     if (!result.success) {
       return {
-        error: result.error || "Audit failed",
+        error: result.error.message || "Audit failed",
 
         status: "FAILED",
       };
     }
 
     return {
-      audit: result.report || "",
+      audit: result.data.report || "",
 
       status: "Audit Completed",
     };

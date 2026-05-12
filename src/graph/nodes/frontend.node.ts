@@ -16,14 +16,14 @@ export async function frontendNode(
 
     if (!result.success) {
       return {
-        error: result.error || "Frontend generation failed",
+        error: result.error.message || "Frontend generation failed",
 
         status: "FAILED",
       };
     }
 
     return {
-      frontend: result.code || "",
+      frontend: result.data.code || "",
 
       status: "Frontend Generated",
     };

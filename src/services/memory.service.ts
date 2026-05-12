@@ -1,5 +1,7 @@
 import { memoryAgent } from "@/agents/memory.agent";
 
+import { agentFail, type AgentResult } from "@/types/agent.types";
+
 export interface SaveProjectMemoryInput {
   projectId: string;
 
@@ -17,7 +19,9 @@ export interface SaveProjectMemoryInput {
 }
 
 class MemoryService {
-  async saveProjectMemory(input: SaveProjectMemoryInput) {
+  async saveProjectMemory(
+    input: SaveProjectMemoryInput,
+  ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     try {
       const result = await memoryAgent.storeWorkflowMemory({
         projectId: input.projectId,
@@ -39,27 +43,40 @@ class MemoryService {
     } catch (error: unknown) {
       console.error("Save Memory Error:", error);
 
-      return {
-        success: false,
-
-        error: error instanceof Error ? error.message : "Memory save failed",
-      };
+      return agentFail(
+        "INTERNAL_ERROR",
+        error instanceof Error ? error.message : "Memory save failed",
+        undefined,
+        error,
+      );
     }
   }
 
-  async saveFrontend(projectId: string, frontend: string) {
+  async saveFrontend(
+    projectId: string,
+    frontend: string,
+  ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     return memoryAgent.storeFrontend(projectId, frontend);
   }
 
-  async saveContracts(projectId: string, contracts: string) {
+  async saveContracts(
+    projectId: string,
+    contracts: string,
+  ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     return memoryAgent.storeContracts(projectId, contracts);
   }
 
-  async saveAuditReport(projectId: string, audit: string) {
+  async saveAuditReport(
+    projectId: string,
+    audit: string,
+  ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     return memoryAgent.storeAuditReport(projectId, audit);
   }
 
-  async saveDeployment(projectId: string, deployment: unknown) {
+  async saveDeployment(
+    projectId: string,
+    deployment: unknown,
+  ): Promise<AgentResult<{ rootHash: string; txHash: string }>> {
     return memoryAgent.storeDeployment(projectId, deployment);
   }
 

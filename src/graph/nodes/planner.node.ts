@@ -14,14 +14,14 @@ export async function plannerNode(
 
     if (!result.success) {
       return {
-        error: result.error || "Planner node failed",
+        error: result.error.message || "Planner node failed",
 
         status: "FAILED",
       };
     }
 
     return {
-      architecture: result.architecture || "",
+      architecture: result.data.architecture || "",
 
       status: "Architecture Generated",
     };

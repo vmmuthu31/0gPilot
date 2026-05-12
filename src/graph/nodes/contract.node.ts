@@ -15,14 +15,14 @@ export async function contractNode(
 
     if (!result.success) {
       return {
-        error: result.error || "Contract generation failed",
+        error: result.error.message || "Contract generation failed",
 
         status: "FAILED",
       };
     }
 
     return {
-      contracts: result.contracts || "",
+      contracts: result.data.contracts || "",
 
       status: "Contracts Generated",
     };

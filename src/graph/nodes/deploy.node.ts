@@ -18,14 +18,14 @@ export async function deployNode(
 
     if (!result.success) {
       return {
-        error: result.error || "Deployment generation failed",
+        error: result.error.message || "Deployment generation failed",
 
         status: "FAILED",
       };
     }
 
     return {
-      deployment: result.deployment || "",
+      deployment: result.data.deployment || "",
 
       status: "Deployment Generated",
     };
