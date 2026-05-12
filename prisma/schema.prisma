@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  githubToken   String?
+  githubLogin   String?
+  vercelToken   String?
+  vercelTeamId  String?
+
+  projects   Project[]
+  executions Execution[]
+
+  @@map("users")
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  prompt      String
+  framework   String?
+  blockchain  String?
+  features    String[]
+
+  status      ProjectStatus @default(PENDING)
+
+  repoUrl         String?
+  repoName        String?
+  deploymentUrl   String?
+  contractAddress String?
+  contractTxHash  String?
+  memoryHash      String?
+
+  executions Execution[]
+
+  @@map("projects")
+}
+
+model Execution {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId  String?
+  node   String
+  status ExecutionStatus @default(RUNNING)
+  log    String?
+  error  String?
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@map("executions")
+}
+
+enum ProjectStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ExecutionStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}

@@ -29,6 +29,8 @@
       "@/shared/*": ["src/shared/*"],
       "@/server/*": ["src/server/*"],
       "@/chains/*": ["src/chains/*"],
+      "@/db": ["src/db/index.ts"],
+      "@/db/*": ["src/db/*"],
       "@/*": ["./*"]
     }
   },
@@ -40,5 +42,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/chains/scripts", "src/chains/typechain-types"]
 }

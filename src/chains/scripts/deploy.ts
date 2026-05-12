@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "hardhat/ethers";
 
 async function main() {
   const AgentRegistry = await ethers.getContractFactory("AgentRegistry");

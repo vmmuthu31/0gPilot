@@ -44,3 +44,13 @@ next-env.d.ts
 typechain-types/
 cache/
 artifacts/
+
+# 0GPilot generated project output
+/generated/
+
+# Prisma generated client
+/src/generated/
+
+# env — never commit real secrets
+.env
+!.env.example
