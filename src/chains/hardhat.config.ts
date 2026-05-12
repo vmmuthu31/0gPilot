@@ -3,13 +3,12 @@ import "@nomicfoundation/hardhat-toolbox";
 import * as dotenv from "dotenv";
 import path from "path";
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
 
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.19",
     settings: {
-      evmVersion: "cancun",
       optimizer: { enabled: true, runs: 200 },
     },
   },
