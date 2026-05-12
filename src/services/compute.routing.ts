@@ -60,35 +60,25 @@ export function getModelRoutingPolicyFromEnv(): ModelRoutingPolicy {
     fallbacks: defaultChatFallbacks,
   };
 
-  const chat: Record<ComputeTask, TaskModelPolicy> = {
-    planner:
-      process.env.ZERO_G_CHAT_MODEL_PLANNER ||
-      process.env.ZERO_G_MODEL_PLANNER ||
-      "",
-    frontend: process.env.ZERO_G_CHAT_MODEL_FRONTEND || "",
-    contract: process.env.ZERO_G_CHAT_MODEL_CONTRACT || "",
-    audit: process.env.ZERO_G_CHAT_MODEL_AUDIT || "",
-    backend: process.env.ZERO_G_CHAT_MODEL_BACKEND || "",
-    database: process.env.ZERO_G_CHAT_MODEL_DATABASE || "",
-    testing: process.env.ZERO_G_CHAT_MODEL_TESTING || "",
-    deploy: process.env.ZERO_G_CHAT_MODEL_DEPLOY || "",
-    analytics: process.env.ZERO_G_CHAT_MODEL_ANALYTICS || "",
-    general: process.env.ZERO_G_CHAT_MODEL_GENERAL || "",
-  } as unknown as Record<ComputeTask, TaskModelPolicy>;
+  const computeTasks: ComputeTask[] = [
+    "planner",
+    "frontend",
+    "contract",
+    "audit",
+    "backend",
+    "database",
+    "testing",
+    "deploy",
+    "analytics",
+    "general",
+  ];
 
-  const typedChat = (Object.keys(chat) as ComputeTask[]).reduce(
+  const typedChat = computeTasks.reduce(
     (acc, task) => {
-      const primary = (chat as unknown as Record<string, string>)[task]?.trim();
+      const envKey = `ZERO_G_CHAT_MODEL_${task.toUpperCase()}`;
+      const primary = process.env[envKey]?.trim();
 
-      if (!primary) {
-        acc[task] = baseChatPolicy;
-        return acc;
-      }
-
-      acc[task] = {
-        primary,
-        fallbacks: baseChatPolicy.fallbacks,
-      };
+      acc[task] = primary ? { primary, fallbacks: baseChatPolicy.fallbacks } : baseChatPolicy;
 
       return acc;
     },

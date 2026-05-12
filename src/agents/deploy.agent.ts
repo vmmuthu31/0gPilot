@@ -28,65 +28,60 @@ class DeployAgent {
 
       if (input.contracts) {
         try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const solc = require("solc");
+          const solcMod = await import("solc").catch(() => null);
+          const solc = solcMod
+            ? ((solcMod as unknown as { default?: unknown }).default ?? solcMod)
+            : null;
 
-          const solidityMatch = input.contracts.match(
-            /```solidity\n([\s\S]*?)```/,
-          );
-          let sourceCode = solidityMatch ? solidityMatch[1] : input.contracts;
+          if (!solc) {
+            deploymentLog += "\nsolc not available — skipping on-chain compilation\n";
+          } else {
+            const solidityMatch = input.contracts.match(/```solidity\n([\s\S]*?)```/);
+            let sourceCode = solidityMatch ? solidityMatch[1] : input.contracts;
 
-          const nameMatch = sourceCode.match(/contract\s+([a-zA-Z0-9_]+)/);
-          const contractName = nameMatch ? nameMatch[1] : null;
+            const nameMatch = sourceCode.match(/contract\s+([a-zA-Z0-9_]+)/);
+            const contractName = nameMatch ? nameMatch[1] : null;
 
-          // Provide a dummy SPDX and pragma if missing to help compilation
-          if (!sourceCode.includes("SPDX-License-Identifier")) {
-            sourceCode = "// SPDX-License-Identifier: MIT\n" + sourceCode;
-          }
-
-          if (contractName) {
-            const compilerInput = {
-              language: "Solidity",
-              sources: { "Generated.sol": { content: sourceCode } },
-              settings: { outputSelection: { "*": { "*": ["*"] } } },
-            };
-
-            const output = JSON.parse(
-              solc.compile(JSON.stringify(compilerInput)),
-            );
-
-            if (output.errors) {
-              const hasError = output.errors.some(
-                (e: { severity: string }) => e.severity === "error",
-              );
-              if (hasError) {
-                deploymentLog +=
-                  "Compilation Errors:\n" +
-                  JSON.stringify(output.errors) +
-                  "\n";
-              }
+            if (!sourceCode.includes("SPDX-License-Identifier")) {
+              sourceCode = "// SPDX-License-Identifier: MIT\n" + sourceCode;
             }
 
-            const compiledContract =
-              output.contracts?.["Generated.sol"]?.[contractName];
+            if (contractName) {
+              const compilerInput = {
+                language: "Solidity",
+                sources: { "Generated.sol": { content: sourceCode } },
+                settings: { outputSelection: { "*": { "*": ["*"] } } },
+              };
 
-            if (compiledContract) {
-              const abi = compiledContract.abi;
-              const bytecode = compiledContract.evm.bytecode.object;
-
-              const deployResult = await deploymentService.deployContract(
-                abi,
-                bytecode,
+              const output = JSON.parse(
+                (solc as { compile: (i: string) => string }).compile(JSON.stringify(compilerInput)),
               );
-              if (deployResult.success && deployResult.address) {
-                deployedAddress = deployResult.address;
-                deployedTxHash = deployResult.txHash;
-                deploymentLog += `\nAutonomously Deployed ${contractName} at ${deployedAddress} (tx: ${deployedTxHash})\n`;
-              } else {
-                deploymentLog += `\nDeployment failed: ${String(deployResult.error)}\n`;
+
+              if (output.errors) {
+                const hasError = output.errors.some(
+                  (e: { severity: string }) => e.severity === "error",
+                );
+                if (hasError) {
+                  deploymentLog += "Compilation Errors:\n" + JSON.stringify(output.errors) + "\n";
+                }
               }
-            } else {
-              deploymentLog += `\nCould not find compiled contract for ${contractName}\n`;
+
+              const compiledContract = output.contracts?.["Generated.sol"]?.[contractName];
+
+              if (compiledContract) {
+                const abi = compiledContract.abi;
+                const bytecode = compiledContract.evm.bytecode.object;
+                const deployResult = await deploymentService.deployContract(abi, bytecode);
+                if (deployResult.success && deployResult.address) {
+                  deployedAddress = deployResult.address;
+                  deployedTxHash = deployResult.txHash;
+                  deploymentLog += `\nAutonomously Deployed ${contractName} at ${deployedAddress} (tx: ${deployedTxHash})\n`;
+                } else {
+                  deploymentLog += `\nDeployment failed: ${String(deployResult.error)}\n`;
+                }
+              } else {
+                deploymentLog += `\nCould not find compiled contract for ${contractName}\n`;
+              }
             }
           }
         } catch (err: unknown) {

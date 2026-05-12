@@ -1,18 +1,16 @@
 import "server-only";
 import { PrismaClient } from "../generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { env } from "@/server/config/env";
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    console.warn("[DB] DATABASE_URL not set — database features will be disabled");
-    return new PrismaClient({
-      log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
+  if (!env.DATABASE_URL) {
+    throw new Error(
+      "[DB] DATABASE_URL is not configured. Add it to your .env file and restart.",
+    );
   }
 
-  const adapter = new PrismaPg({ connectionString });
+  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
 
   return new PrismaClient({
     adapter,

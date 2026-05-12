@@ -90,19 +90,37 @@ class ProjectBuilderService {
     };
   }
 
+  private assertSafeProjectId(projectId: string): void {
+    if (!/^[a-zA-Z0-9_-]+$/.test(projectId)) {
+      throw new Error(`Invalid projectId: ${projectId}`);
+    }
+  }
+
+  private assertInsideBase(resolved: string): void {
+    const base = path.resolve(OUTPUT_BASE);
+    if (!resolved.startsWith(base + path.sep) && resolved !== base) {
+      throw new Error("Path traversal attempt detected");
+    }
+  }
+
   async getProjectDir(projectId: string): Promise<string> {
+    this.assertSafeProjectId(projectId);
     return path.join(OUTPUT_BASE, projectId);
   }
 
   async listFiles(projectId: string): Promise<string[]> {
-    const dir = path.join(OUTPUT_BASE, projectId);
+    this.assertSafeProjectId(projectId);
+    const dir = path.resolve(OUTPUT_BASE, projectId);
+    this.assertInsideBase(dir);
     return this.walkDir(dir, dir);
   }
 
   async readFile(projectId: string, relativePath: string): Promise<string | null> {
     try {
-      const filePath = path.join(OUTPUT_BASE, projectId, relativePath);
-      return await fs.readFile(filePath, "utf-8");
+      this.assertSafeProjectId(projectId);
+      const resolved = path.resolve(OUTPUT_BASE, projectId, relativePath);
+      this.assertInsideBase(resolved);
+      return await fs.readFile(resolved, "utf-8");
     } catch {
       return null;
     }
