@@ -26,8 +26,8 @@ export interface StreamResult {
 }
 
 const client = new OpenAI({
-  apiKey: process.env.ZERO_G_API_KEY,
-  baseURL: "https://router-api.0g.ai/v1",
+  apiKey: process.env.ZERO_G_API_KEY || "",
+  baseURL: process.env.ZERO_G_API_URL || "",
 });
 
 class ZeroGComputeService {
