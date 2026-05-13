@@ -34,7 +34,7 @@ export const SpaceBackground = () => {
     const frame = requestAnimationFrame(() => {
       setMounted(true);
       
-      setStars(Array.from({ length: 150 }).map((_, i) => ({
+      setStars(Array.from({ length: 50 }).map((_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -44,7 +44,7 @@ export const SpaceBackground = () => {
         delay: Math.random() * 5,
       })));
 
-      setDustParticles(Array.from({ length: 40 }).map((_, i) => ({
+      setDustParticles(Array.from({ length: 15 }).map((_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -56,11 +56,18 @@ export const SpaceBackground = () => {
       })));
     });
 
+    let ticking = false;
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      });
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setMousePosition({
+            x: (e.clientX / window.innerWidth - 0.5) * 20,
+            y: (e.clientY / window.innerHeight - 0.5) * 20,
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => {
@@ -101,7 +108,6 @@ export const SpaceBackground = () => {
               top: `${star.y}%`,
               width: star.size,
               height: star.size,
-              boxShadow: `0 0 ${star.size * 2}px rgba(255, 255, 255, 0.8)`,
             }}
             animate={{
               opacity: [star.opacity, 0.2, star.opacity],

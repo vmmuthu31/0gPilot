@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { verifySession, extractBearerToken } from "@/server/auth/session";
 import { db } from "@/db";
 
