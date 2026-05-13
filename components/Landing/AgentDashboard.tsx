@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FileText, 
-  Code, 
-  Globe, 
-  Server, 
-  Zap, 
-  Paperclip, 
-  Maximize2, 
+import {
+  FileText,
+  Code,
+  Globe,
+  Server,
+  Zap,
+  Paperclip,
+  Maximize2,
   Send,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
+import { useAuth } from "@/src/client/auth/AuthProvider";
 
 const agents = [
   {
@@ -54,6 +56,8 @@ const agents = [
 
 export const AgentDashboard = () => {
   const router = useRouter();
+  const { isConnected } = useAccount();
+  const { token, status } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [prompt, setPrompt] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -71,7 +75,15 @@ export const AgentDashboard = () => {
         const data = JSON.parse(event.data);
         if (data.status?.startsWith("NODE_COMPLETED:")) {
           const nodeName = data.status.split(":")[1];
-          const index = agents.findIndex(a => a.name.toLowerCase().includes(nodeName.toLowerCase().replace('_', '')) || a.name.toLowerCase().includes(nodeName.toLowerCase().split(' ')[0]));
+          const index = agents.findIndex(
+            (a) =>
+              a.name
+                .toLowerCase()
+                .includes(nodeName.toLowerCase().replace("_", "")) ||
+              a.name
+                .toLowerCase()
+                .includes(nodeName.toLowerCase().split(" ")[0]),
+          );
           if (index !== -1) {
             setActiveStep(index + 1);
           }
@@ -84,7 +96,7 @@ export const AgentDashboard = () => {
           sse.close();
         }
       } catch {
-        console.log("error parsing event data")
+        console.log("error parsing event data");
       }
     };
 
@@ -102,16 +114,16 @@ export const AgentDashboard = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative w-full max-w-2xl mx-auto"
     >
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        className="hidden" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
         multiple
       />
 
@@ -122,33 +134,40 @@ export const AgentDashboard = () => {
           </h3>
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[10px] font-medium text-green-400 uppercase tracking-wider">AI is ready</span>
+            <span className="text-[10px] font-medium text-green-400 uppercase tracking-wider">
+              AI is ready
+            </span>
           </div>
         </div>
 
         <div className="mb-10">
-          <p className="text-sm text-slate-400 mb-4 ml-1">What do you want to build?</p>
+          <p className="text-sm text-slate-400 mb-4 ml-1">
+            What do you want to build?
+          </p>
           <div className="relative group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
             <div className="relative bg-[#050816] border border-white/5 rounded-2xl p-6 min-h-[140px] flex flex-col justify-between shadow-inner">
               <div className="flex flex-col gap-3">
-                <textarea 
+                <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Create an NFT marketplace with royalties, advanced search, and wallet integration."
                   className="w-full bg-transparent border-none outline-none text-slate-300 leading-relaxed text-sm resize-none placeholder:text-slate-600 h-[80px]"
                 />
-                
+
                 <AnimatePresence>
                   {attachedFiles.length > 0 && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                       className="flex flex-wrap gap-2"
                     >
                       {attachedFiles.map((file, i) => (
-                        <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300">
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300"
+                        >
                           <Paperclip className="w-3 h-3 text-purple-400" />
                           {file.name}
                         </div>
@@ -160,35 +179,61 @@ export const AgentDashboard = () => {
 
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={handleFileClick}
                     className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-all hover:text-purple-400 active:scale-95 cursor-pointer"
                   >
-                    <Paperclip className={`w-4 h-4 ${attachedFiles.length > 0 ? "text-purple-400" : ""}`} />
+                    <Paperclip
+                      className={`w-4 h-4 ${
+                        attachedFiles.length > 0 ? "text-purple-400" : ""
+                      }`}
+                    />
                   </button>
                   <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-colors cursor-pointer">
                     <Maximize2 className="w-4 h-4" />
                   </button>
                 </div>
-                <button 
+                <button
                   onClick={async () => {
                     if (!prompt.trim() || isBuilding) return;
+                    if (!isConnected || status !== "authenticated" || !token) {
+                      return;
+                    }
+
                     const pId = Math.random().toString(36).substring(7);
                     setIsBuilding(true);
                     setActiveStep(0);
                     setProjectId(pId);
-                    
-                    await fetch("/api/workflows", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer 0gpilot-dev-key"
-                      },
-                      body: JSON.stringify({ projectId: pId, prompt })
-                    });
+
+                    try {
+                      await fetch("/api/workflows", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ projectId: pId, prompt }),
+                      });
+                    } catch {
+                      setIsBuilding(false);
+                    }
                   }}
-                  className={`p-2.5 rounded-xl ${isBuilding ? 'bg-slate-600' : 'bg-[#7C3AED] shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105'} text-white transition-transform active:scale-95 cursor-pointer`}
-                  disabled={isBuilding}
+                  className={`p-2.5 rounded-xl ${
+                    isBuilding
+                      ? "bg-slate-600"
+                      : "bg-[#7C3AED] shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105"
+                  } text-white transition-transform active:scale-95 cursor-pointer`}
+                  disabled={
+                    isBuilding ||
+                    !isConnected ||
+                    status !== "authenticated" ||
+                    !token
+                  }
+                  title={
+                    !isConnected || status !== "authenticated" || !token
+                      ? "Connect your wallet to generate"
+                      : "Generate"
+                  }
                 >
                   <Send className="w-4 h-4 fill-current" />
                 </button>
@@ -202,8 +247,8 @@ export const AgentDashboard = () => {
             <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
               AI Agents Working
             </h4>
-            <button 
-              onClick={() => router.push('/dashboard')}
+            <button
+              onClick={() => router.push("/dashboard")}
               className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors cursor-pointer"
             >
               View All
@@ -215,31 +260,70 @@ export const AgentDashboard = () => {
               <motion.div
                 key={agent.name}
                 initial={{ opacity: 0, y: 10 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   y: 0,
-                  borderColor: i === activeStep ? "rgba(168, 85, 247, 0.4)" : i < activeStep ? "rgba(168, 85, 247, 0.2)" : "rgba(255, 255, 255, 0.05)",
-                  backgroundColor: i === activeStep ? "rgba(168, 85, 247, 0.08)" : i < activeStep ? "rgba(168, 85, 247, 0.03)" : "rgba(255, 255, 255, 0.02)"
+                  borderColor:
+                    i === activeStep
+                      ? "rgba(168, 85, 247, 0.4)"
+                      : i < activeStep
+                      ? "rgba(168, 85, 247, 0.2)"
+                      : "rgba(255, 255, 255, 0.05)",
+                  backgroundColor:
+                    i === activeStep
+                      ? "rgba(168, 85, 247, 0.08)"
+                      : i < activeStep
+                      ? "rgba(168, 85, 247, 0.03)"
+                      : "rgba(255, 255, 255, 0.02)",
                 }}
                 className={`p-3 rounded-xl border transition-all duration-500 ${
-                  i === activeStep ? "shadow-[0_0_15px_rgba(168,85,247,0.15)]" : ""
+                  i === activeStep
+                    ? "shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                    : ""
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg bg-[#050816] border border-white/10 flex items-center justify-center mb-3 ${
-                  i <= activeStep ? agent.color : "text-slate-500"
-                }`}>
+                <div
+                  className={`w-8 h-8 rounded-lg bg-[#050816] border border-white/10 flex items-center justify-center mb-3 ${
+                    i <= activeStep ? agent.color : "text-slate-500"
+                  }`}
+                >
                   {agent.icon}
                 </div>
-                <p className="text-[10px] font-bold text-white mb-1 truncate">{agent.name.split(" ")[0]}</p>
+                <p className="text-[10px] font-bold text-white mb-1 truncate">
+                  {agent.name.split(" ")[0]}
+                </p>
                 <div className="flex items-center gap-1 mb-2">
-                  <div className={`w-1 h-1 rounded-full ${i <= activeStep ? "bg-green-400 animate-pulse" : "bg-slate-600"}`} />
-                  <p className="text-[8px] text-slate-500 truncate">{i < activeStep ? "Completed" : i === activeStep ? agent.status : "Waiting..."}</p>
+                  <div
+                    className={`w-1 h-1 rounded-full ${
+                      i <= activeStep
+                        ? "bg-green-400 animate-pulse"
+                        : "bg-slate-600"
+                    }`}
+                  />
+                  <p className="text-[8px] text-slate-500 truncate">
+                    {i < activeStep
+                      ? "Completed"
+                      : i === activeStep
+                      ? agent.status
+                      : "Waiting..."}
+                  </p>
                 </div>
                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: i < activeStep ? "100%" : i === activeStep ? "60%" : "0%" }}
-                    className={`h-full bg-gradient-to-r ${i <= activeStep ? "from-purple-500 to-blue-500" : "from-slate-700 to-slate-800"}`}
+                    animate={{
+                      width:
+                        i < activeStep
+                          ? "100%"
+                          : i === activeStep
+                          ? "60%"
+                          : "0%",
+                    }}
+                    className={`h-full bg-gradient-to-r ${
+                      i <= activeStep
+                        ? "from-purple-500 to-blue-500"
+                        : "from-slate-700 to-slate-800"
+                    }`}
                   />
                 </div>
               </motion.div>
