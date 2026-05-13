@@ -260,14 +260,15 @@ export function Pricing() {
 
               <div className="mb-6">
                 <div className="text-3xl font-bold text-white">0</div>
-                <div className="text-xs text-slate-500">0G / one-time</div>
+                <div className="text-xs text-slate-500">0 0G</div>
               </div>
 
               <div className="space-y-3 text-sm text-slate-300">
                 {[
                   "100 starter credits",
-                  "Credit-based generation",
-                  "Integrations",
+                  "Basic AI generation",
+                  "Shared AI agents",
+                  "Testnet deployments",
                 ].map((f) => (
                   <div key={f} className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
@@ -328,11 +329,11 @@ export function Pricing() {
                   <div className="text-3xl font-bold text-white">
                     {proPriceOg ?? "—"}{" "}
                     <span className="text-base text-slate-400 font-semibold">
-                      0G
+                      0G / month
                     </span>
                   </div>
                   <div className="text-xs text-slate-500">
-                    One-time on-chain payment
+                    Paid as one-time on-chain purchase
                   </div>
                   {admin && (
                     <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-2">
@@ -445,11 +446,11 @@ export function Pricing() {
                   <div className="text-3xl font-bold text-white">
                     {proPlusPriceOg ?? "—"}{" "}
                     <span className="text-base text-slate-400 font-semibold">
-                      0G
+                      0G / month
                     </span>
                   </div>
                   <div className="text-xs text-slate-500">
-                    One-time on-chain payment
+                    Paid as one-time on-chain purchase
                   </div>
                 </div>
 

@@ -38,7 +38,7 @@ export const POST = withSecurity(
           error: {
             code: "INSUFFICIENT_CREDITS",
             message:
-              "Not enough credits to start generation. Upgrade to Pro to continue.",
+              "Not enough credits to start generation. Upgrade to Pro or Pro+ to continue.",
           },
           creditsRequired: cost,
         },
