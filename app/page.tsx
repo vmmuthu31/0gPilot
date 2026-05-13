@@ -10,6 +10,7 @@ import { Features } from "@/components/Landing/sections/Features";
 import HeroSection from "@/components/Landing/sections/HeroSection";
 import Partners from "@/components/Landing/sections/Partners";
 import { Process } from "@/components/Landing/sections/Process";
+import { Pricing } from "@/components/Landing/sections/Pricing";
 import { Stats } from "@/components/Landing/sections/Stats";
 
 export default function App() {
@@ -44,6 +45,10 @@ export default function App() {
 
         <div className="relative z-[5] bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
           <BuilderTargetSection />
+        </div>
+
+        <div className="relative z-[6] bg-[#050816]/15 backdrop-blur-[2px] rounded-t-[2.5rem] border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.3)] mt-8">
+          <Pricing />
         </div>
 
         <div>

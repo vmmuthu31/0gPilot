@@ -26,19 +26,19 @@ export const Process = () => {
         setCompletedSteps(prev => [...new Set([...prev, current])]);
         setIsMoving(true);
 
-        // 2. Signal travels for 2 seconds
+        // 2. Signal travels for 800ms
         setTimeout(() => {
           setIsMoving(false);
           setActiveStep(current + 1);
-        }, 2000);
+        }, 800);
       } else if (activeStep === 5) {
         // Pause at the end
         setTimeout(() => {
           setCompletedSteps([]);
           setActiveStep(0);
-        }, 4000);
+        }, 2000);
       }
-    }, 5500);
+    }, 1500);
     return () => clearInterval(interval);
   }, [activeStep]);
 
@@ -119,7 +119,7 @@ export const Process = () => {
                     opacity: [0, 1, 1, 0]
                   }}
                   transition={{ 
-                    duration: 2,
+                    duration: 0.8,
                     times: [0, 0.1, 0.9, 1],
                     ease: "easeInOut"
                   }}

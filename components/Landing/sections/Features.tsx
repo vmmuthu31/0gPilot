@@ -1,4 +1,7 @@
+"use client";
+
 import { fadeInUp, staggerContainer } from "@/lib/motion";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import {
@@ -13,6 +16,7 @@ import {
 import { cloneElement, type ReactElement } from "react";
 
 export const Features = () => {
+  const router = useRouter();
   const features = [
     {
       icon: <MessageSquare />,
@@ -81,6 +85,7 @@ export const Features = () => {
                 scale: 1.02,
                 transition: { duration: 0.2 }
               }}
+              onClick={() => router.push(`/dashboard?prompt=${encodeURIComponent(feature.desc)}`)}
               className="glass-card p-4 rounded-xl group cursor-pointer relative overflow-hidden flex flex-col border border-white/10 border-t-white/20 hover:border-purple-400/50 transition-all duration-300 bg-white/[0.02] backdrop-blur-[4px] h-[220px]"
             >
               {/* Dynamic Glow Background */}

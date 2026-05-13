@@ -11,6 +11,8 @@ import {
 import { WagmiProvider } from "wagmi";
 import { mainnet, sepolia, arbitrum, optimism } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { PricingProvider } from "@/context/PricingContext";
+import { GlobalModals } from "@/components/GlobalModals";
 
 const zeroGTestnet = {
   id: 16602,
@@ -60,7 +62,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
-          {children}
+          <PricingProvider>
+            <GlobalModals />
+            {children}
+          </PricingProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
