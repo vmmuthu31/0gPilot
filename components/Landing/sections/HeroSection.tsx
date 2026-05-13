@@ -1,13 +1,21 @@
+"use client";
+
+import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronRight, Play, Zap } from "lucide-react";
+import { 
+  ChevronRight, 
+  Play, 
+  Zap, 
+} from "lucide-react";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
-
 import Link from "next/link";
+
 import { AgentDashboard } from "../AgentDashboard";
 
 const HeroSection = () => {
+
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden min-h-[90vh] flex items-center">
       <div className="planet-glow-left"></div>

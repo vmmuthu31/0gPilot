@@ -33,7 +33,6 @@ const Navbar = () => (
           "How it Works",
           "Use Cases",
           "Architecture",
-          "Docs",
           "Pricing",
         ].map((item) => (
           <a
@@ -47,12 +46,6 @@ const Navbar = () => (
       </div>
 
       <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard"
-          className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors mr-2"
-        >
-          Dashboard
-        </Link>
         <Link
           href="https://github.com/vmmuthu31/0gPilot"
           target="_blank"

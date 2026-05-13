@@ -52,7 +52,7 @@ const cards = [
 
 export default function BuilderTargetSection() {
   return (
-    <section className="relative py-32 overflow-hidden">
+    <section id="use-cases" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.10),transparent_30%)]" />
 
       <div

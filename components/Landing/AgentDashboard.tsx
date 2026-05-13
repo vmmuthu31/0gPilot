@@ -12,6 +12,7 @@ import {
   Maximize2, 
   Send,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const agents = [
   {
@@ -52,6 +53,7 @@ const agents = [
 ];
 
 export const AgentDashboard = () => {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [prompt, setPrompt] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -160,11 +162,11 @@ export const AgentDashboard = () => {
                 <div className="flex items-center gap-3">
                   <button 
                     onClick={handleFileClick}
-                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-all hover:text-purple-400 active:scale-95"
+                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-all hover:text-purple-400 active:scale-95 cursor-pointer"
                   >
                     <Paperclip className={`w-4 h-4 ${attachedFiles.length > 0 ? "text-purple-400" : ""}`} />
                   </button>
-                  <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-colors">
+                  <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 transition-colors cursor-pointer">
                     <Maximize2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -185,7 +187,7 @@ export const AgentDashboard = () => {
                       body: JSON.stringify({ projectId: pId, prompt })
                     });
                   }}
-                  className={`p-2.5 rounded-xl ${isBuilding ? 'bg-slate-600' : 'bg-[#7C3AED] shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105'} text-white transition-transform active:scale-95`}
+                  className={`p-2.5 rounded-xl ${isBuilding ? 'bg-slate-600' : 'bg-[#7C3AED] shadow-[0_0_15px_rgba(124,58,237,0.4)] hover:scale-105'} text-white transition-transform active:scale-95 cursor-pointer`}
                   disabled={isBuilding}
                 >
                   <Send className="w-4 h-4 fill-current" />
@@ -200,7 +202,10 @@ export const AgentDashboard = () => {
             <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
               AI Agents Working
             </h4>
-            <button className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors">
+            <button 
+              onClick={() => router.push('/dashboard')}
+              className="text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-slate-300 transition-colors cursor-pointer"
+            >
               View All
             </button>
           </div>

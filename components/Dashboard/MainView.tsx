@@ -41,7 +41,14 @@ const examples = [
 ];
 
 export const MainView = () => {
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlPrompt = searchParams.get("prompt");
+      return urlPrompt ? decodeURIComponent(urlPrompt) : "";
+    }
+    return "";
+  });
   const [isEnhancing, setIsEnhancing] = useState(false);
 
   const handleEnhance = async () => {
