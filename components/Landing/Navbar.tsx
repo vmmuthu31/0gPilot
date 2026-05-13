@@ -94,7 +94,7 @@ const Navbar = () => (
                     return (
                       <Button
                         onClick={openConnectModal}
-                        className="px-4 py-1.5 text-xs bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg hover:opacity-90 transition-all font-bold border-0 shadow-[0_0_15px_rgba(124,58,237,0.3)] h-9"
+                        className="px-4 py-1.5 cursor-pointer text-xs bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-lg hover:opacity-90 transition-all font-bold border-0 shadow-[0_0_15px_rgba(124,58,237,0.3)] h-9"
                       >
                         Connect Wallet
                       </Button>
