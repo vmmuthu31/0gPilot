@@ -128,15 +128,15 @@ export default function ProjectCockpit() {
   const [copied, setCopied] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const jwtRef = useRef<string | null>(
-    typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null
-  );
-  const jwt = jwtRef.current;
 
-  const getAuthHeader = useCallback(
-    () => (jwtRef.current ? { Authorization: `Bearer ${jwtRef.current}` } : {}),
-    []
-  );
+  const getAuthHeader = useCallback(() => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
+
+  const jwt =
+    typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null;
 
   const fetchProject = useCallback(async () => {
     if (!projectId) return;
@@ -280,7 +280,7 @@ export default function ProjectCockpit() {
       es.close();
       clearInterval(poll);
     };
-  }, [project?.status, projectId, jwt, fetchProject, fetchFiles]);
+  }, [project, projectId, jwt, fetchProject, fetchFiles]);
 
   const fileTree = buildFileTree(files);
 
