@@ -1,10 +1,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
-import {
-  ChevronRight,
-  Play,
-  Zap,
-} from "lucide-react";
+import { ChevronRight, Play, Zap } from "lucide-react";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 
@@ -26,12 +22,12 @@ const HeroSection = () => {
             variants={fadeInUp}
             className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-[#1a1625] text-[#a78bfa] border border-[#a78bfa]/20 mb-6 gap-2 hover:bg-[#7c3aed]/20 transition-colors cursor-pointer"
           >
-            <Image 
-              src="/0g.png" 
-              alt="0G" 
+            <Image
+              src="/0g.png"
+              alt="0G"
               width={16}
               height={16}
-              className="w-4 h-4 rounded-full" 
+              className="w-4 h-4 rounded-full"
             />
             Built for the OG Ecosystem <ChevronRight className="w-3 h-3" />
           </motion.div>
@@ -59,15 +55,13 @@ const HeroSection = () => {
             className="flex flex-wrap items-center gap-4 mb-10"
           >
             <Link href="/dashboard">
-              <Button
-                className="px-8 py-6 text-base bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-xl font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1"
-              >
+              <Button className="px-8 py-6 cursor-pointer text-base bg-[#7c3aed] hover:bg-[#8b5cf6] text-white rounded-xl font-semibold flex items-center gap-2 shadow-[0_0_25px_rgba(124,58,237,0.4)] hover:shadow-[0_0_40px_rgba(124,58,237,0.6)] transition-all hover:-translate-y-1">
                 <Zap className="w-5 h-5 fill-current" /> Build Your DApp
               </Button>
             </Link>
-            <Button 
-              variant="outline" 
-              className="px-8 py-6 text-base border-[var(--border)] bg-transparent hover:bg-[#111526] text-white rounded-xl font-semibold flex items-center gap-2 transition-all hover:border-[#7c3aed]/50 hover:-translate-y-1"
+            <Button
+              variant="outline"
+              className="px-8 py-6 cursor-pointer text-base border-[var(--border)] bg-transparent hover:bg-[#111526] text-white rounded-xl font-semibold flex items-center gap-2 transition-all hover:border-[#7c3aed]/50 hover:-translate-y-1"
             >
               Explore Demo <Play className="w-4 h-4" />
             </Button>
@@ -94,8 +88,8 @@ const HeroSection = () => {
               ))}
             </div>
             <span>
-              Trusted by <strong className="text-white font-bold">950+</strong> builders
-              worldwide
+              Trusted by <strong className="text-white font-bold">950+</strong>{" "}
+              builders worldwide
             </span>
           </motion.div>
         </motion.div>

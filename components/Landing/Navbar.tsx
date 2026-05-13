@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FaGithub } from "react-icons/fa";
 
 const Navbar = () => (
@@ -35,7 +35,6 @@ const Navbar = () => (
           "Architecture",
           "Docs",
           "Pricing",
-          "Blog",
         ].map((item) => (
           <a
             key={item}
@@ -48,18 +47,26 @@ const Navbar = () => (
       </div>
 
       <div className="flex items-center gap-4">
-        <Link href="/dashboard" className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors mr-2">
+        <Link
+          href="/dashboard"
+          className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors mr-2"
+        >
           Dashboard
         </Link>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="hidden sm:flex items-center gap-2 rounded-xl px-4 text-white/80 hover:text-white"
+        <Link
+          href="https://github.com/vmmuthu31/0gPilot"
+          target="_blank"
+          className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors mr-4"
         >
-          <FaGithub className="w-4 h-4" />
-          Star on GitHub
-        </Button>
-
+          <Button
+            variant="secondary"
+            size="sm"
+            className="hidden cursor-pointer sm:flex items-center gap-2 rounded-xl px-4 text-white/80 hover:text-white"
+          >
+            <FaGithub className="w-4 h-4" />
+            Star on GitHub
+          </Button>
+        </Link>
         <ConnectButton.Custom>
           {({
             account,
@@ -70,22 +77,22 @@ const Navbar = () => (
             authenticationStatus,
             mounted,
           }) => {
-            const ready = mounted && authenticationStatus !== 'loading';
+            const ready = mounted && authenticationStatus !== "loading";
             const connected =
               ready &&
               account &&
               chain &&
               (!authenticationStatus ||
-                authenticationStatus === 'authenticated');
+                authenticationStatus === "authenticated");
 
             return (
               <div
                 {...(!ready && {
-                  'aria-hidden': true,
-                  'style': {
+                  "aria-hidden": true,
+                  style: {
                     opacity: 0,
-                    pointerEvents: 'none',
-                    userSelect: 'none',
+                    pointerEvents: "none",
+                    userSelect: "none",
                   },
                 })}
               >
@@ -126,7 +133,7 @@ const Navbar = () => (
                             {chain.iconUrl && (
                               /* eslint-disable-next-line @next/next/no-img-element */
                               <img
-                                alt={chain.name ?? 'Chain icon'}
+                                alt={chain.name ?? "Chain icon"}
                                 src={chain.iconUrl}
                                 className="w-4 h-4"
                               />
