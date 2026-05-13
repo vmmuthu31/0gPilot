@@ -1,13 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Sparkles, 
   ArrowRight,
   Zap,
   ShieldCheck,
   Globe,
-  Database
+  Database,
+  Wand2,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -39,6 +41,31 @@ const examples = [
 ];
 
 export const MainView = () => {
+  const [prompt, setPrompt] = useState("");
+  const [isEnhancing, setIsEnhancing] = useState(false);
+
+  const handleEnhance = async () => {
+    if (!prompt.trim() || prompt.length < 3) return;
+    try {
+      setIsEnhancing(true);
+      const res = await fetch("/api/prompt/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.enhanced) {
+          setPrompt(data.enhanced);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to enhance prompt", error);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   return (
     <div className="p-12 max-w-5xl mx-auto">
       <div className="flex flex-col items-center text-center mb-16">
@@ -81,9 +108,25 @@ export const MainView = () => {
         <div className="relative bg-[#0B1120] border border-white/10 rounded-2xl p-2 flex items-center shadow-2xl">
           <input 
             type="text" 
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             placeholder="Describe your dApp idea in detail..." 
             className="flex-1 bg-transparent border-0 px-6 py-4 text-white placeholder:text-slate-500 focus:outline-none"
           />
+
+          <button 
+            onClick={handleEnhance}
+            disabled={isEnhancing || prompt.trim().length < 3}
+            className="mr-3 p-3 rounded-xl bg-white/5 hover:bg-purple-500/20 text-slate-400 hover:text-purple-400 disabled:opacity-50 transition-colors border border-white/5"
+            title="Enhance Prompt with AI"
+          >
+            {isEnhancing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Wand2 className="w-5 h-5" />
+            )}
+          </button>
+
           <button className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 text-white font-bold px-8 py-4 rounded-xl flex items-center gap-2 transition-all group/btn">
             Generate
             <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
@@ -97,11 +140,12 @@ export const MainView = () => {
           {examples.map((example, i) => (
             <motion.button
               key={example.title}
+              onClick={() => setPrompt(example.desc)}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
               whileHover={{ y: -3 }}
-              className="flex flex-col items-start text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all group"
+              className="flex flex-col items-start text-left p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all group cursor-pointer"
             >
               <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${example.color} flex items-center justify-center mb-3 border border-white/5`}>
                 {React.cloneElement(example.icon as React.ReactElement, { className: "w-4 h-4" })}
