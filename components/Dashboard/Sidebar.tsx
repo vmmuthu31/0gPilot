@@ -14,7 +14,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { usePricing } from "@/context/PricingContext";
 
 const menuItems = [
   { icon: Home, label: "Home", href: "/dashboard" },
@@ -28,7 +27,6 @@ const menuItems = [
 
 export const Sidebar = () => {
   const pathname = usePathname();
-  const { openModal } = usePricing();
 
   return (
     <div className="w-64 h-screen bg-[#050816]/80 backdrop-blur-2xl border-r border-white/5 flex flex-col fixed left-0 top-0 z-50">
