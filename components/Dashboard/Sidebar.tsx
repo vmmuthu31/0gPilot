@@ -40,6 +40,7 @@ export const Sidebar = () => {
                 height={20}
                 alt="Logo"
                 className="rounded-full"
+                style={{ width: "auto" }}
               />
             </div>
           </div>
