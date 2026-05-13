@@ -53,4 +53,4 @@ artifacts/
 
 # env — never commit real secrets
 .env
-!.env.example
+!.env.examplepackage-lock.json
