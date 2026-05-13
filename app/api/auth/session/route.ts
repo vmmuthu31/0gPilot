@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   if (!token) {
     return NextResponse.json(
       { error: { code: "UNAUTHORIZED", message: "No token provided" } },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -18,8 +18,13 @@ export async function GET(req: NextRequest) {
 
   if (!session) {
     return NextResponse.json(
-      { error: { code: "INVALID_TOKEN", message: "Token is invalid or expired" } },
-      { status: 401 }
+      {
+        error: {
+          code: "INVALID_TOKEN",
+          message: "Token is invalid or expired",
+        },
+      },
+      { status: 401 },
     );
   }
 
@@ -28,6 +33,8 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       address: true,
+      plan: true,
+      credits: true,
       githubLogin: true,
       vercelTeamId: true,
       createdAt: true,
@@ -38,7 +45,7 @@ export async function GET(req: NextRequest) {
   if (!user) {
     return NextResponse.json(
       { error: { code: "USER_NOT_FOUND", message: "User no longer exists" } },
-      { status: 404 }
+      { status: 404 },
     );
   }
 

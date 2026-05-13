@@ -9,8 +9,8 @@ import {
   darkTheme,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, sepolia, arbitrum, optimism } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { AuthProvider } from "@/src/client/auth/AuthProvider";
 
 const zeroGTestnet = {
   id: 16602,
@@ -49,7 +49,7 @@ const zeroGMainnet = {
 const config = getDefaultConfig({
   appName: "0GPilot",
   projectId: "4b971a742ce74f3ffc8fef65c71a33df",
-  chains: [zeroGTestnet, zeroGMainnet, mainnet, sepolia, arbitrum, optimism],
+  chains: [zeroGTestnet, zeroGMainnet],
   ssr: true,
 });
 
@@ -60,7 +60,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

@@ -13,6 +13,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  plan    UserPlan @default(FREE)
+  credits Int      @default(100)
+
   githubToken   String?
   githubLogin   String?
   vercelToken   String?
@@ -20,8 +23,24 @@ model User {
 
   projects   Project[]
   executions Execution[]
+  payments   Payment[]
 
   @@map("users")
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan      UserPlan
+  chainId   Int
+  txHash    String @unique
+  amountWei String
+
+  @@map("payments")
 }
 
 model Project {
@@ -85,4 +104,11 @@ enum ExecutionStatus {
   COMPLETED
   FAILED
   SKIPPED
+}
+
+enum UserPlan {
+  FREE
+  PRO
+  PRO_PLUS
+  TEAM
 }

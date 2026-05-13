@@ -10,7 +10,9 @@ const EnvSchema = z.object({
   ZERO_G_PRIVATE_KEY: z
     .string()
     .optional()
-    .default("0000000000000000000000000000000000000000000000000000000000000001"),
+    .default(
+      "0000000000000000000000000000000000000000000000000000000000000001",
+    ),
   ZERO_G_API_KEY: z.string().optional().default(""),
   ZERO_G_API_URL: z.string().optional().default(""),
 
@@ -30,6 +32,51 @@ const EnvSchema = z.object({
     .default("postgresql://postgres:password@localhost:5432/0gpilot"),
 
   REDIS_URL: z.string().default("redis://localhost:6379"),
+
+  NEXT_PUBLIC_ADMIN_WALLET_ADDRESS: z
+    .string()
+    .optional()
+    .default("0x0000000000000000000000000000000000000000"),
+
+  PRO_PLAN_PRICE_OG: z.string().optional().default("10"),
+
+  PRO_PLUS_PLAN_PRICE_OG: z.string().optional().default("25"),
+
+  PRO_PLAN_CREDITS: z
+    .string()
+    .optional()
+    .default("5000")
+    .transform((v) => {
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) && n > 0 ? n : 5000;
+    }),
+
+  PRO_PLUS_PLAN_CREDITS: z
+    .string()
+    .optional()
+    .default("25000")
+    .transform((v) => {
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) && n > 0 ? n : 25000;
+    }),
+
+  WORKFLOW_CREDITS_COST_FREE: z
+    .string()
+    .optional()
+    .default("10")
+    .transform((v) => {
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) && n > 0 ? n : 10;
+    }),
+
+  WORKFLOW_CREDITS_COST_PRO: z
+    .string()
+    .optional()
+    .default("5")
+    .transform((v) => {
+      const n = parseInt(v, 10);
+      return Number.isFinite(n) && n > 0 ? n : 5;
+    }),
 
   VECTOR_SIMILARITY_THRESHOLD: z
     .string()
@@ -51,6 +98,8 @@ export function assertProductionSecrets(): void {
     ZERO_G_PRIVATE_KEY:
       "0000000000000000000000000000000000000000000000000000000000000001",
     DATABASE_URL: "postgresql://postgres:password@localhost:5432/0gpilot",
+    NEXT_PUBLIC_ADMIN_WALLET_ADDRESS:
+      "0x0000000000000000000000000000000000000000",
   };
 
   const violations: string[] = [];
@@ -63,7 +112,9 @@ export function assertProductionSecrets(): void {
 
   if (violations.length > 0) {
     throw new Error(
-      `[Config] Production environment is missing required secrets: ${violations.join(", ")}. Set them in Vercel Environment Variables.`,
+      `[Config] Production environment is missing required secrets: ${violations.join(
+        ", ",
+      )}. Set them in Vercel Environment Variables.`,
     );
   }
 }
