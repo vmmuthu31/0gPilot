@@ -64,7 +64,7 @@ async function getContainer(): Promise<WebContainer> {
 }
 
 function filesToWebContainerFS(
-  files: Record<string, string>
+  files: Record<string, string>,
 ): Record<string, unknown> {
   const fs: Record<string, unknown> = {};
 
@@ -76,7 +76,8 @@ function filesToWebContainerFS(
       if (!node[parts[i]]) {
         node[parts[i]] = { directory: {} };
       }
-      node = (node[parts[i]] as { directory: Record<string, unknown> }).directory;
+      node = (node[parts[i]] as { directory: Record<string, unknown> })
+        .directory;
     }
 
     const filename = parts[parts.length - 1];
@@ -130,7 +131,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
           write(chunk) {
             writeTerminal(chunk);
           },
-        })
+        }),
       );
 
       const installExit = await installProc.exit;
@@ -148,7 +149,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
           write(chunk) {
             writeTerminal(chunk);
           },
-        })
+        }),
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
@@ -196,7 +197,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
       xterm.dispose();
       xtermRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -204,6 +205,21 @@ export function WebContainerPreview({ files, projectId }: Props) {
       startContainer();
     }
   }, [files, startContainer]);
+
+  // Remount files when they change so the running container sees updates
+  useEffect(() => {
+    if (!containerRef.current) return;
+    if (!startedRef.current) return;
+    try {
+      const fsTree = filesToWebContainerFS(files);
+      // Mounting again will update the filesystem in the container
+      void containerRef.current.mount(
+        fsTree as Parameters<WebContainer["mount"]>[0],
+      );
+    } catch (err) {
+      // ignore
+    }
+  }, [files]);
 
   const restart = () => {
     startedRef.current = false;

@@ -9,9 +9,9 @@ import { ProjectSidebar } from "@/components/Dashboard/Projects/ProjectSidebar";
 const WebContainerPreview = dynamic(
   () =>
     import("@/components/Dashboard/Projects/WebContainerPreview").then(
-      (m) => m.WebContainerPreview
+      (m) => m.WebContainerPreview,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 import {
   ChevronRight,
@@ -75,7 +75,9 @@ const FILE_ICONS: Record<string, React.ReactNode> = {
 
 function getFileIcon(filename: string) {
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
-  return FILE_ICONS[ext] ?? <FileCode2 className="w-3.5 h-3.5 text-slate-400" />;
+  return (
+    FILE_ICONS[ext] ?? <FileCode2 className="w-3.5 h-3.5 text-slate-400" />
+  );
 }
 
 function buildFileTree(files: string[]) {
@@ -93,19 +95,40 @@ function buildFileTree(files: string[]) {
   return tree;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; color: string; dot: string }
+> = {
   PENDING: { label: "Queued", color: "text-amber-400", dot: "bg-amber-400" },
-  RUNNING: { label: "Generating", color: "text-blue-400", dot: "bg-blue-400 animate-pulse" },
-  COMPLETED: { label: "Generated", color: "text-emerald-400", dot: "bg-emerald-400" },
-  DEPLOYING: { label: "Deploying", color: "text-purple-400", dot: "bg-purple-400 animate-pulse" },
-  DEPLOYED: { label: "Live", color: "text-emerald-400", dot: "bg-emerald-400 animate-pulse" },
+  RUNNING: {
+    label: "Generating",
+    color: "text-blue-400",
+    dot: "bg-blue-400 animate-pulse",
+  },
+  COMPLETED: {
+    label: "Generated",
+    color: "text-emerald-400",
+    dot: "bg-emerald-400",
+  },
+  DEPLOYING: {
+    label: "Deploying",
+    color: "text-purple-400",
+    dot: "bg-purple-400 animate-pulse",
+  },
+  DEPLOYED: {
+    label: "Live",
+    color: "text-emerald-400",
+    dot: "bg-emerald-400 animate-pulse",
+  },
   FAILED: { label: "Failed", color: "text-red-400", dot: "bg-red-400" },
 };
 
 function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDING;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 ${cfg.color}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 ${cfg.color}`}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
@@ -121,6 +144,7 @@ export default function ProjectCockpit() {
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
+  const selectedFileRef = useRef<string | null>(null);
   const [expandedDirs, setExpandedDirs] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<ActiveTab>("sandbox");
   const [deploying, setDeploying] = useState(false);
@@ -129,10 +153,10 @@ export default function ProjectCockpit() {
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const getAuthHeader = useCallback(() => {
+  const getAuthHeader = useCallback((): HeadersInit => {
     const token =
       typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null;
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { Authorization: `Bearer ${token}` } : ({} as HeadersInit);
   }, []);
 
   const jwt =
@@ -148,7 +172,7 @@ export default function ProjectCockpit() {
       const data = await res.json();
       setProject(data.project);
     } catch {
-      // silent
+      console.log("Failed to fetch project");
     }
   }, [projectId, getAuthHeader]);
 
@@ -170,20 +194,20 @@ export default function ProjectCockpit() {
             const encoded = encodeURIComponent(path);
             const r = await fetch(
               `/api/projects/${projectId}/files?file=${encoded}`,
-              { headers: getAuthHeader() }
+              { headers: getAuthHeader() },
             );
             if (r.ok) {
               const d = await r.json();
               contents[path] = d.content ?? "";
             }
           } catch {
-            // skip
+            console.log(`Failed to fetch content for file ${path}`);
           }
-        })
+        }),
       );
       setFileContents(contents);
     } catch {
-      // silent
+      console.log("Failed to fetch files");
     }
   }, [projectId, getAuthHeader]);
 
@@ -192,9 +216,12 @@ export default function ProjectCockpit() {
     setFileContent("");
     try {
       const encoded = encodeURIComponent(filePath);
-      const res = await fetch(`/api/projects/${projectId}/files?file=${encoded}`, {
-        headers: getAuthHeader(),
-      });
+      const res = await fetch(
+        `/api/projects/${projectId}/files?file=${encoded}`,
+        {
+          headers: getAuthHeader(),
+        },
+      );
       if (!res.ok) return;
       const data = await res.json();
       setFileContent(data.content ?? "");
@@ -233,6 +260,10 @@ export default function ProjectCockpit() {
   };
 
   useEffect(() => {
+    selectedFileRef.current = selectedFile;
+  }, [selectedFile]);
+
+  useEffect(() => {
     void (async () => {
       await fetchProject();
       await fetchFiles();
@@ -242,11 +273,11 @@ export default function ProjectCockpit() {
   useEffect(() => {
     if (!project || !projectId) return;
 
-    const isActive = ["PENDING", "RUNNING", "DEPLOYING"].includes(project.status);
+    const isActive = ["PENDING", "RUNNING", "DEPLOYING"].includes(
+      project.status,
+    );
     if (!isActive) return;
 
-
-    // SSE for real-time agent events
     const sseUrl = jwt
       ? `/api/stream?projectId=${projectId}&token=${encodeURIComponent(jwt)}`
       : `/api/stream?projectId=${projectId}`;
@@ -255,25 +286,55 @@ export default function ProjectCockpit() {
 
     es.onmessage = (e) => {
       try {
-        const event = JSON.parse(e.data);
+        const data = JSON.parse(e.data);
+
         if (
-          event.type === "node_complete" ||
-          event.type === "workflow_complete" ||
-          event.type === "node_start"
+          typeof data.status === "string" &&
+          data.status.startsWith("NODE_COMPLETED:")
         ) {
           fetchProject();
-          if (event.type === "workflow_complete") {
-            fetchFiles();
-          }
+          return;
+        }
+
+        if (data.status === "COMPLETED" || data.status === "FAILED") {
+          fetchProject();
+          fetchFiles();
+          return;
+        }
+
+        if (data.status === "FILE_LINE") {
+          const payload = data.payload || {};
+          const filePath = payload.path || "";
+          const line = typeof payload.line === "string" ? payload.line : "";
+
+          if (!filePath) return;
+
+          setFiles((prev) => {
+            if (prev.includes(filePath)) return prev;
+            return [...prev, filePath];
+          });
+
+          setFileContents((prev) => {
+            const prevContent = prev[filePath] ?? "";
+            const nextContent =
+              prevContent === "" ? line : `${prevContent}\n${line}`;
+            return { ...prev, [filePath]: nextContent };
+          });
+
+          setFileContent((prev) => {
+            if (selectedFileRef.current !== filePath) return prev;
+            return prev === "" ? line : `${prev}\n${line}`;
+          });
+
+          return;
         }
       } catch {
-        // malformed event
+        console.error("Failed to parse SSE message:", e.data);
       }
     };
 
     es.onerror = () => es.close();
 
-    // Light fallback poll every 5s
     const poll = setInterval(fetchProject, 5000);
 
     return () => {
@@ -304,9 +365,13 @@ export default function ProjectCockpit() {
         {/* Header */}
         <div className="px-8 py-5 border-b border-white/5 bg-[#050816]/60 backdrop-blur-sm">
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mb-3">
-            <span className="hover:text-white cursor-pointer transition-colors">Projects</span>
+            <span className="hover:text-white cursor-pointer transition-colors">
+              Projects
+            </span>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-white truncate max-w-xs">{project?.prompt.slice(0, 40) ?? "Loading…"}</span>
+            <span className="text-white truncate max-w-xs">
+              {project?.prompt.slice(0, 40) ?? "Loading…"}
+            </span>
           </div>
 
           <div className="flex items-start justify-between">
@@ -319,7 +384,10 @@ export default function ProjectCockpit() {
               </div>
               <div className="flex items-center gap-2">
                 {projectTags.map((tag) => (
-                  <span key={tag} className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-slate-300 text-[10px] font-bold">
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-slate-300 text-[10px] font-bold"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -349,20 +417,26 @@ export default function ProjectCockpit() {
                   Open Live
                 </a>
               )}
-              {project && project.status !== "DEPLOYED" && project.status !== "DEPLOYING" && (
-                <button
-                  onClick={triggerDeploy}
-                  disabled={deploying || project.status === "PENDING" || project.status === "RUNNING"}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {deploying ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Rocket className="w-3.5 h-3.5" />
-                  )}
-                  {deploying ? "Deploying…" : "Deploy to Vercel"}
-                </button>
-              )}
+              {project &&
+                project.status !== "DEPLOYED" &&
+                project.status !== "DEPLOYING" && (
+                  <button
+                    onClick={triggerDeploy}
+                    disabled={
+                      deploying ||
+                      project.status === "PENDING" ||
+                      project.status === "RUNNING"
+                    }
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {deploying ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Rocket className="w-3.5 h-3.5" />
+                    )}
+                    {deploying ? "Deploying…" : "Deploy to Vercel"}
+                  </button>
+                )}
               {project?.status === "DEPLOYING" && (
                 <div className="px-5 py-2 rounded-xl bg-purple-600/20 border border-purple-500/20 text-purple-400 text-xs font-bold flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -389,8 +463,13 @@ export default function ProjectCockpit() {
           {/* File Explorer */}
           <div className="w-60 border-r border-white/5 bg-[#070d1a] flex flex-col shrink-0 overflow-hidden">
             <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Files</span>
-              <button onClick={fetchFiles} className="text-slate-600 hover:text-slate-300 transition-colors">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Files
+              </span>
+              <button
+                onClick={fetchFiles}
+                className="text-slate-600 hover:text-slate-300 transition-colors"
+              >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -398,7 +477,8 @@ export default function ProjectCockpit() {
             <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
               {files.length === 0 ? (
                 <div className="px-3 py-8 text-center text-slate-600 text-xs">
-                  {project?.status === "PENDING" || project?.status === "RUNNING"
+                  {project?.status === "PENDING" ||
+                  project?.status === "RUNNING"
                     ? "Generating files…"
                     : "No files yet"}
                 </div>
@@ -473,14 +553,29 @@ export default function ProjectCockpit() {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab bar */}
             <div className="flex items-center border-b border-white/5 bg-[#070d1a] px-4 gap-1">
-              {(
-                [
-                  { id: "sandbox", icon: <FlaskConical className="w-3.5 h-3.5" />, label: "Sandbox", badge: "LIVE" as const },
-                  { id: "preview", icon: <Monitor className="w-3.5 h-3.5" />, label: "Deployed" },
-                  { id: "code", icon: <Code2 className="w-3.5 h-3.5" />, label: "Code" },
-                  { id: "logs", icon: <Terminal className="w-3.5 h-3.5" />, label: "Agent Logs" },
-                ]
-              ).map((tab) => (
+              {[
+                {
+                  id: "sandbox",
+                  icon: <FlaskConical className="w-3.5 h-3.5" />,
+                  label: "Sandbox",
+                  badge: "LIVE" as const,
+                },
+                {
+                  id: "preview",
+                  icon: <Monitor className="w-3.5 h-3.5" />,
+                  label: "Deployed",
+                },
+                {
+                  id: "code",
+                  icon: <Code2 className="w-3.5 h-3.5" />,
+                  label: "Code",
+                },
+                {
+                  id: "logs",
+                  icon: <Terminal className="w-3.5 h-3.5" />,
+                  label: "Agent Logs",
+                },
+              ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as ActiveTab)}
@@ -511,7 +606,11 @@ export default function ProjectCockpit() {
                       onClick={() => copyUrl(project.deploymentUrl!)}
                       className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
                     </button>
                     <a
                       href={project.deploymentUrl}
@@ -573,19 +672,28 @@ export default function ProjectCockpit() {
                           <Rocket className="w-9 h-9 text-purple-400" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-white mb-2">No Live Preview Yet</h3>
+                          <h3 className="text-lg font-bold text-white mb-2">
+                            No Live Preview Yet
+                          </h3>
                           {project?.status === "COMPLETED" ? (
                             <p className="text-sm text-slate-400 max-w-sm">
                               Your project is ready. Connect GitHub + Vercel in{" "}
-                              <a href="/dashboard/integrations" className="text-purple-400 hover:underline">
+                              <a
+                                href="/dashboard/integrations"
+                                className="text-purple-400 hover:underline"
+                              >
                                 Integrations
                               </a>{" "}
                               then click{" "}
-                              <span className="text-white font-semibold">Deploy to Vercel</span>.
+                              <span className="text-white font-semibold">
+                                Deploy to Vercel
+                              </span>
+                              .
                             </p>
                           ) : (
                             <p className="text-sm text-slate-400 max-w-sm">
-                              {project?.status === "PENDING" || project?.status === "RUNNING"
+                              {project?.status === "PENDING" ||
+                              project?.status === "RUNNING"
                                 ? "Your project is being generated. Preview will be available after deployment."
                                 : "Deploy your project to see it live here."}
                             </p>
@@ -597,7 +705,11 @@ export default function ProjectCockpit() {
                             disabled={deploying}
                             className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
                           >
-                            {deploying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
+                            {deploying ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Rocket className="w-4 h-4" />
+                            )}
                             {deploying ? "Deploying…" : "Deploy Now"}
                           </button>
                         )}
@@ -618,17 +730,25 @@ export default function ProjectCockpit() {
                       <>
                         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-white/5 bg-[#070d1a]">
                           {getFileIcon(selectedFile)}
-                          <span className="text-xs text-slate-300 font-mono">{selectedFile}</span>
+                          <span className="text-xs text-slate-300 font-mono">
+                            {selectedFile}
+                          </span>
                           <button
                             onClick={() => copyUrl(fileContent)}
                             className="ml-auto p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
                           >
-                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copied ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
                           </button>
                         </div>
                         <div className="flex-1 overflow-auto">
                           <pre className="p-6 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {fileContent || <span className="text-slate-600">Loading…</span>}
+                            {fileContent || (
+                              <span className="text-slate-600">Loading…</span>
+                            )}
                           </pre>
                         </div>
                       </>
