@@ -137,7 +137,15 @@ class ProjectBuilderService {
     this.assertInsideBase(dir);
     try {
       await fs.stat(dir);
-    } catch (e) {
+    } catch (e: unknown) {
+      if (
+        typeof e === "object" &&
+        e !== null &&
+        "code" in e &&
+        (e as { code: string }).code === "ENOENT"
+      ) {
+        return [];
+      }
       console.error(`Project directory not found: ${dir}`, e);
       return [];
     }
