@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: { code: "BAD_REQUEST", message: "Invalid JSON" } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: { code: "VALIDATION_FAILED", message: parsed.error.issues } },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -40,27 +40,52 @@ export async function POST(req: NextRequest) {
 
   if (!storedNonce) {
     return NextResponse.json(
-      { error: { code: "NONCE_EXPIRED", message: "Nonce expired or not found. Request a new one." } },
-      { status: 401 }
+      {
+        error: {
+          code: "NONCE_EXPIRED",
+          message: "Nonce expired or not found. Request a new one.",
+        },
+      },
+      { status: 401 },
     );
   }
 
-  const result = await verifyWalletSignature({ message, signature, nonce: storedNonce });
+  const result = await verifyWalletSignature({
+    message,
+    signature,
+    nonce: storedNonce,
+  });
 
   if (!result.success || !result.address) {
     return NextResponse.json(
-      { error: { code: "INVALID_SIGNATURE", message: result.error || "Signature verification failed" } },
-      { status: 401 }
+      {
+        error: {
+          code: "INVALID_SIGNATURE",
+          message: result.error || "Signature verification failed",
+        },
+      },
+      { status: 401 },
     );
   }
 
   await connection.del(nonceKey);
 
-  const user = await db.user.upsert({
-    where: { address: result.address },
-    update: { updatedAt: new Date() },
-    create: { address: result.address },
-  });
+  let user = await db.user.findUnique({ where: { address: result.address } });
+
+  if (!user) {
+    user = await db.user.create({
+      data: {
+        address: result.address,
+        credits: 100,
+        plan: "FREE",
+      },
+    });
+  } else {
+    user = await db.user.update({
+      where: { id: user.id },
+      data: { updatedAt: new Date() },
+    });
+  }
 
   const token = await createSession({ address: user.address, userId: user.id });
 
