@@ -38,7 +38,7 @@ export const ProjectSidebar = () => {
                 height={20}
                 alt="Logo"
                 className="rounded-full"
-                style={{ width: "auto" }}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
           </div>

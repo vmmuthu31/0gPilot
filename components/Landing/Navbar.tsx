@@ -20,7 +20,7 @@ const Navbar = () => (
           width={32}
           height={32}
           className="h-8 rounded-full"
-          style={{ width: "auto" }}
+          style={{ width: "auto", height: "auto" }}
         />
         <span className="text-xl font-bold tracking-tight text-white">
           OGPilot
