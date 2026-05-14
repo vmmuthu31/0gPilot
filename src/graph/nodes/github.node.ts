@@ -8,6 +8,16 @@ export async function githubNode(
   state: WorkflowState
 ): Promise<Partial<WorkflowState>> {
   try {
+    await projectBuilderService.build({
+      projectId: state.projectId!,
+      prompt: state.prompt,
+      architecture: state.architecture,
+      frontend: state.frontend,
+      backend: state.backend,
+      contracts: state.contracts,
+      tests: state.tests,
+    });
+
     if (state.error) {
       return { status: "GitHub Push Skipped (prior error)" };
     }
@@ -20,16 +30,6 @@ export async function githubNode(
     if (!project?.user.githubToken) {
       return { status: "GitHub Push Skipped (no token)" };
     }
-
-    await projectBuilderService.build({
-      projectId: state.projectId!,
-      prompt: state.prompt,
-      architecture: state.architecture,
-      frontend: state.frontend,
-      backend: state.backend,
-      contracts: state.contracts,
-      tests: state.tests,
-    });
 
     const repoName = state.prompt
       .toLowerCase()
