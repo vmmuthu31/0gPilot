@@ -1,4 +1,3 @@
-import "server-only";
 
 const VERCEL_API = "https://api.vercel.com";
 

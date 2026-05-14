@@ -1,4 +1,3 @@
-import "server-only";
 
 import { env } from "@/server/config/env";
 import { type UserPlan } from "../../generated/prisma";

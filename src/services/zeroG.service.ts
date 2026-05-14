@@ -1,4 +1,3 @@
-import "server-only";
 
 import { Indexer, MemData } from "@0gfoundation/0g-storage-ts-sdk";
 import { ethers } from "ethers";

@@ -1,4 +1,3 @@
-import "server-only";
 import { vercelService } from "@/services/vercel.service";
 import { db } from "@/db";
 import { WorkflowState } from "../state";

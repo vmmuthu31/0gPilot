@@ -13,6 +13,8 @@ export interface WorkflowState {
 
   backend?: string;
 
+  deployment?: string;
+
   databaseDesign?: string;
 
   tests?: string;

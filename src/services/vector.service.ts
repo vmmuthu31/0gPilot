@@ -1,4 +1,3 @@
-import "server-only";
 import { connection } from "@/server/queue/redis";
 import { computeService } from "./compute.service";
 

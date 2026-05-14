@@ -1,4 +1,3 @@
-import "server-only";
 import { connection } from "@/server/queue/redis";
 
 export function emitWorkflowEvent(projectId: string, status: string, payload?: unknown): void {

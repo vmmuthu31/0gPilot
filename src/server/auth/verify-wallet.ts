@@ -1,4 +1,3 @@
-import "server-only";
 import { SiweMessage } from "siwe";
 
 export interface VerifyWalletInput {

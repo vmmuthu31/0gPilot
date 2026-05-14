@@ -50,42 +50,42 @@ export function createWorkflow() {
   const workflow = new StateGraph(GraphState)
     .addNode("validate", validateNode)
     .addNode("planner", plannerNode)
-    .addNode("frontend", frontendNode)
-    .addNode("contracts", contractNode)
-    .addNode("audit", auditNode)
-    .addNode("backend", backendNode)
+    .addNode("frontendNode", frontendNode)
+    .addNode("contractsNode", contractNode)
+    .addNode("auditNode", auditNode)
+    .addNode("backendNode", backendNode)
     .addNode("database", databaseNode)
     .addNode("build_join", buildJoinNode)
     .addNode("testing", testingNode)
-    .addNode("deployment", deployNode)
+    .addNode("deployNode", deployNode)
     .addNode("deployment_skipped", deploySkippedNode)
     .addNode("github", githubNode)
     .addNode("vercel", vercelNode)
-    .addNode("analytics", analyticsNode)
+    .addNode("analyticsNode", analyticsNode)
     .addNode("memory", memoryNode)
     .addNode("retrieve_memory", retrieveMemoryNode)
 
     .addEdge(START, "retrieve_memory")
     .addEdge("retrieve_memory", "validate")
     .addEdge("validate", "planner")
-    .addEdge("planner", "frontend")
-    .addEdge("planner", "contracts")
+    .addEdge("planner", "frontendNode")
+    .addEdge("planner", "contractsNode")
     .addEdge("planner", "database")
-    .addEdge("contracts", "audit")
-    .addEdge("contracts", "backend")
-    .addEdge(["frontend", "audit", "backend", "database"], "build_join")
+    .addEdge("contractsNode", "auditNode")
+    .addEdge("contractsNode", "backendNode")
+    .addEdge(["frontendNode", "auditNode", "backendNode", "database"], "build_join")
     .addEdge("build_join", "testing")
     .addConditionalEdges(
       "testing",
       (state: WorkflowState) =>
-        state.error ? "deployment_skipped" : "deployment",
-      ["deployment", "deployment_skipped"],
+        state.error ? "deployment_skipped" : "deployNode",
+      ["deployNode", "deployment_skipped"],
     )
-    .addEdge("deployment", "github")
+    .addEdge("deployNode", "github")
     .addEdge("deployment_skipped", "github")
     .addEdge("github", "vercel")
-    .addEdge("vercel", "analytics")
-    .addEdge("analytics", "memory")
+    .addEdge("vercel", "analyticsNode")
+    .addEdge("analyticsNode", "memory")
     .addEdge("memory", END);
 
   return workflow.compile();

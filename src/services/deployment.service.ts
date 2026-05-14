@@ -1,4 +1,3 @@
-import "server-only";
 import { ethers } from "ethers";
 import { env } from "@/server/config/env";
 

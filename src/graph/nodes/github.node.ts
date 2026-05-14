@@ -1,4 +1,3 @@
-import "server-only";
 import { projectBuilderService } from "@/services/project-builder.service";
 import { githubService } from "@/services/github.service";
 import { db } from "@/db";

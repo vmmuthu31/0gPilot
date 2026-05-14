@@ -1,4 +1,3 @@
-import "server-only";
 import { Octokit } from "@octokit/rest";
 import { projectBuilderService } from "./project-builder.service";
 

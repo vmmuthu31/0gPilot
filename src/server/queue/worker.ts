@@ -1,4 +1,3 @@
-import "server-only";
 import { Worker } from "bullmq";
 import { connection } from "./redis";
 import { executeWorkflow } from "@/graph/workflow.graph";
