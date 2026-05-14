@@ -63,6 +63,9 @@ export const AgentDashboard = () => {
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [isBuilding, setIsBuilding] = useState(false);
+  const [fileContents, setFileContents] = useState<Record<string, string[]>>(
+    {},
+  );
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -77,6 +80,17 @@ export const AgentDashboard = () => {
     sse.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        if (data.status === "FILE_LINE") {
+          const payload = data.payload || {};
+          const filePath = payload.path || "";
+          const line = typeof payload.line === "string" ? payload.line : "";
+          setFileContents((prev) => {
+            const prevLines = prev[filePath] ?? [];
+            const next = { ...prev, [filePath]: [...prevLines, line] };
+            return next;
+          });
+          return;
+        }
         if (data.status?.startsWith("NODE_COMPLETED:")) {
           const nodeName = data.status.split(":")[1];
           const index = agents.findIndex(
@@ -356,6 +370,21 @@ export const AgentDashboard = () => {
             ))}
           </div>
         </div>
+        {isBuilding && Object.keys(fileContents).length > 0 && (
+          <div className="mt-4 bg-[#050816] border border-white/5 rounded-2xl p-4">
+            <h5 className="text-sm font-semibold text-slate-200 mb-2">
+              Live Preview
+            </h5>
+            <div className="max-h-44 overflow-auto text-xs text-slate-300 bg-black/20 p-2 rounded">
+              {Object.entries(fileContents).map(([p, lines]) => (
+                <div key={p} className="mb-2">
+                  <div className="text-[10px] text-slate-400 mb-1">{p}</div>
+                  <pre className="whitespace-pre-wrap">{lines.join("\n")}</pre>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/10 blur-[80px] -z-10 rounded-full" />

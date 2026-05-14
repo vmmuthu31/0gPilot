@@ -1,6 +1,7 @@
 import "server-only";
 import path from "path";
 import fs from "fs/promises";
+import { emitWorkflowEvent } from "@/server/events/emitter";
 
 export interface AgentOutputs {
   projectId: string;
@@ -165,6 +166,20 @@ class ProjectBuilderService {
     const fullPath = path.join(projectDir, relativePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
     await fs.writeFile(fullPath, content, "utf-8");
+
+    try {
+      const projectId = path.basename(projectDir);
+      const lines = content.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++) {
+        emitWorkflowEvent(projectId, "FILE_LINE", {
+          path: relativePath,
+          index: i,
+          line: lines[i],
+        });
+      }
+    } catch (err) {
+      console.error("Failed to emit file lines:", err);
+    }
   }
 
   private extractCodeBlocks(
