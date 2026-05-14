@@ -104,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const authInFlightRef = useRef(false);
+  const hasStoredTokenRef = useRef(token !== null);
 
   const refreshUser = useCallback(async () => {
     if (!token) return;
@@ -114,17 +115,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isConnected || !address) {
       authInFlightRef.current = false;
-      clearStoredAuthToken();
-      queueMicrotask(() => {
-        setToken(null);
-        setUser(null);
-        setStatus("idle");
-        setError(null);
-      });
+      if (!hasStoredTokenRef.current) {
+        clearStoredAuthToken();
+        queueMicrotask(() => {
+          setToken(null);
+          setUser(null);
+          setStatus("idle");
+          setError(null);
+        });
+      }
       return;
     }
 
-    if (token) return;
+    if (token) {
+      hasStoredTokenRef.current = true;
+      return;
+    }
+
     if (authInFlightRef.current) return;
 
     authInFlightRef.current = true;

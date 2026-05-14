@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/src/client/auth/AuthProvider";
 
 const examples = [
   {
@@ -46,6 +47,7 @@ type GenerationPhase = "idle" | "enhancing" | "generating" | "error";
 
 export const MainView = () => {
   const router = useRouter();
+  const { token } = useAuth();
   const [prompt, setPrompt] = useState(() => {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search).get("prompt");
@@ -55,9 +57,6 @@ export const MainView = () => {
   });
   const [phase, setPhase] = useState<GenerationPhase>("idle");
   const [error, setError] = useState<string | null>(null);
-
-  const jwt =
-    typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null;
 
   const handleEnhance = async () => {
     if (!prompt.trim() || prompt.length < 3) return;
@@ -81,6 +80,12 @@ export const MainView = () => {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || prompt.length < 10) return;
+    if (!token) {
+      setError("Please authenticate with your wallet first");
+      setPhase("error");
+      return;
+    }
+
     setError(null);
     setPhase("generating");
 
@@ -89,7 +94,7 @@ export const MainView = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ prompt: prompt.trim() }),
       });
@@ -148,8 +153,8 @@ export const MainView = () => {
           transition={{ delay: 0.2 }}
           className="text-slate-400 max-w-2xl text-lg leading-relaxed"
         >
-          Describe your dApp. 0GPilot generates, previews, and deploys it live
-          — powered by autonomous AI agents on the 0G ecosystem.
+          Describe your dApp. 0GPilot generates, previews, and deploys it live —
+          powered by autonomous AI agents on the 0G ecosystem.
         </motion.p>
       </div>
 
@@ -178,7 +183,7 @@ export const MainView = () => {
             className="flex-1 bg-transparent border-0 px-6 py-4 text-white placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed"
           />
 
-          <div className="flex flex-col gap-2 mr-2 mt-2 shrink-0">
+          <div className="flex  gap-2 mr-2 mt-2 shrink-0">
             <button
               onClick={handleEnhance}
               disabled={isWorking || prompt.trim().length < 3}
@@ -286,7 +291,7 @@ export const MainView = () => {
               >
                 {React.cloneElement(
                   example.icon as React.ReactElement<{ className?: string }>,
-                  { className: "w-4 h-4" }
+                  { className: "w-4 h-4" },
                 )}
               </div>
               <h4 className="text-[13px] font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">
