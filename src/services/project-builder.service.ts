@@ -33,7 +33,10 @@ class ProjectBuilderService {
     await this.writeFile(projectDir, "README.md", readme);
 
     if (outputs.frontend) {
-      const frontendFiles = this.extractCodeBlocks(outputs.frontend, "tsx|ts|jsx|js|css|html");
+      const frontendFiles = this.extractCodeBlocks(
+        outputs.frontend,
+        "tsx|ts|jsx|js|css|html",
+      );
       for (const [filename, content] of Object.entries(frontendFiles)) {
         const dest = `app/${filename}`;
         files[dest] = content;
@@ -47,7 +50,10 @@ class ProjectBuilderService {
     }
 
     if (outputs.backend) {
-      const backendFiles = this.extractCodeBlocks(outputs.backend, "ts|js|json");
+      const backendFiles = this.extractCodeBlocks(
+        outputs.backend,
+        "ts|js|json",
+      );
       for (const [filename, content] of Object.entries(backendFiles)) {
         const dest = `api/${filename}`;
         files[dest] = content;
@@ -70,7 +76,11 @@ class ProjectBuilderService {
 
       if (Object.keys(contractFiles).length === 0) {
         files["contracts/Contract.sol"] = outputs.contracts;
-        await this.writeFile(projectDir, "contracts/Contract.sol", outputs.contracts);
+        await this.writeFile(
+          projectDir,
+          "contracts/Contract.sol",
+          outputs.contracts,
+        );
       }
     }
 
@@ -81,7 +91,11 @@ class ProjectBuilderService {
 
     const packageJson = this.buildPackageJson(outputs.prompt);
     files["package.json"] = JSON.stringify(packageJson, null, 2);
-    await this.writeFile(projectDir, "package.json", JSON.stringify(packageJson, null, 2));
+    await this.writeFile(
+      projectDir,
+      "package.json",
+      JSON.stringify(packageJson, null, 2),
+    );
 
     const scaffoldFiles = this.buildScaffoldFiles();
     for (const [filename, content] of Object.entries(scaffoldFiles)) {
@@ -120,10 +134,19 @@ class ProjectBuilderService {
     this.assertSafeProjectId(projectId);
     const dir = path.resolve(OUTPUT_BASE, projectId);
     this.assertInsideBase(dir);
+    try {
+      await fs.stat(dir);
+    } catch (e) {
+      console.error(`Project directory not found: ${dir}`, e);
+      return [];
+    }
     return this.walkDir(dir, dir);
   }
 
-  async readFile(projectId: string, relativePath: string): Promise<string | null> {
+  async readFile(
+    projectId: string,
+    relativePath: string,
+  ): Promise<string | null> {
     try {
       this.assertSafeProjectId(projectId);
       const resolved = path.resolve(OUTPUT_BASE, projectId, relativePath);
@@ -137,7 +160,7 @@ class ProjectBuilderService {
   private async writeFile(
     projectDir: string,
     relativePath: string,
-    content: string
+    content: string,
   ): Promise<void> {
     const fullPath = path.join(projectDir, relativePath);
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -146,14 +169,14 @@ class ProjectBuilderService {
 
   private extractCodeBlocks(
     text: string,
-    extensions: string
+    extensions: string,
   ): Record<string, string> {
     const files: Record<string, string> = {};
     const extPattern = extensions.split("|").join("|");
 
     const filenameBlockRegex = new RegExp(
       `(?:###?\\s+([\\w./\\-]+\\.(?:${extPattern}))|\\*\\*([\\w./\\-]+\\.(?:${extPattern}))\\*\\*|([\\w./\\-]+\\.(?:${extPattern})):?\\s*\\n)\\s*\`\`\`(?:${extPattern}|\\w+)?\\n([\\s\\S]*?)\`\`\``,
-      "gi"
+      "gi",
     );
 
     let match;
@@ -168,7 +191,7 @@ class ProjectBuilderService {
     if (Object.keys(files).length === 0) {
       const genericBlockRegex = new RegExp(
         `\`\`\`(?:${extPattern}|\\w+)?\\n([\\s\\S]*?)\`\`\``,
-        "gi"
+        "gi",
       );
       let idx = 0;
       const extList = extensions.split("|");
@@ -224,13 +247,13 @@ class ProjectBuilderService {
         react: "^18.3.1",
         "react-dom": "^18.3.1",
         "@rainbow-me/rainbowkit": "^2.1.3",
-        "wagmi": "^2.10.5",
-        "viem": "^2.13.6",
+        wagmi: "^2.10.5",
+        viem: "^2.13.6",
         "@tanstack/react-query": "^5.40.0",
-        "ethers": "^6.13.0",
+        ethers: "^6.13.0",
         "framer-motion": "^11.2.10",
         "lucide-react": "^0.390.0",
-        "clsx": "^2.1.1",
+        clsx: "^2.1.1",
         "tailwind-merge": "^2.3.0",
         "class-variance-authority": "^0.7.0",
       },
@@ -238,11 +261,11 @@ class ProjectBuilderService {
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
-        "typescript": "^5",
-        "tailwindcss": "^3.4.4",
-        "autoprefixer": "^10.4.19",
-        "postcss": "^8.4.38",
-        "eslint": "^8",
+        typescript: "^5",
+        tailwindcss: "^3.4.4",
+        autoprefixer: "^10.4.19",
+        postcss: "^8.4.38",
+        eslint: "^8",
         "eslint-config-next": "14.2.5",
       },
     };
@@ -281,27 +304,36 @@ class ProjectBuilderService {
         "};",
       ].join("\n"),
 
-      "tsconfig.json": JSON.stringify({
-        compilerOptions: {
-          target: "es5",
-          lib: ["dom", "dom.iterable", "esnext"],
-          allowJs: true,
-          skipLibCheck: true,
-          strict: true,
-          noEmit: true,
-          esModuleInterop: true,
-          module: "esnext",
-          moduleResolution: "bundler",
-          resolveJsonModule: true,
-          isolatedModules: true,
-          jsx: "preserve",
-          incremental: true,
-          plugins: [{ name: "next" }],
-          paths: { "@/*": ["./*"] },
+      "tsconfig.json": JSON.stringify(
+        {
+          compilerOptions: {
+            target: "es5",
+            lib: ["dom", "dom.iterable", "esnext"],
+            allowJs: true,
+            skipLibCheck: true,
+            strict: true,
+            noEmit: true,
+            esModuleInterop: true,
+            module: "esnext",
+            moduleResolution: "bundler",
+            resolveJsonModule: true,
+            isolatedModules: true,
+            jsx: "preserve",
+            incremental: true,
+            plugins: [{ name: "next" }],
+            paths: { "@/*": ["./*"] },
+          },
+          include: [
+            "next-env.d.ts",
+            "**/*.ts",
+            "**/*.tsx",
+            ".next/types/**/*.ts",
+          ],
+          exclude: ["node_modules"],
         },
-        include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-        exclude: ["node_modules"],
-      }, null, 2),
+        null,
+        2,
+      ),
 
       "app/globals.css": [
         "@tailwind base;",
@@ -328,7 +360,7 @@ class ProjectBuilderService {
         "",
         "export default function RootLayout({ children }: { children: React.ReactNode }) {",
         "  return (",
-        "    <html lang=\"en\">",
+        '    <html lang="en">',
         "      <body>{children}</body>",
         "    </html>",
         "  );",

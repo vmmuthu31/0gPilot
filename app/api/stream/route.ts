@@ -12,7 +12,12 @@ export async function GET(req: NextRequest) {
     return new Response("Missing projectId", { status: 400 });
   }
 
-  const token = extractBearerToken(req.headers.get("Authorization"));
+  let token = extractBearerToken(req.headers.get("Authorization"));
+  if (!token) {
+    const q = req.nextUrl.searchParams.get("token");
+    token = q ? decodeURIComponent(q) : null;
+  }
+
   if (!token) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -72,7 +77,7 @@ export async function GET(req: NextRequest) {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "X-Accel-Buffering": "no",
     },
   });
