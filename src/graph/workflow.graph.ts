@@ -34,8 +34,23 @@ const GraphState = Annotation.Root({
   tests: Annotation<string>(),
   analytics: Annotation<string>(),
   memoryHash: Annotation<string>(),
-  status: Annotation<string>(),
-  error: Annotation<string>(),
+  status: Annotation<string>({
+    reducer: (a: string, b: string | string[]) => {
+      if (Array.isArray(b)) return b[b.length - 1] || a;
+      return b || a;
+    },
+    default: () => "",
+  }),
+  error: Annotation<string>({
+    reducer: (a: string, b: string | string[]) => {
+      if (Array.isArray(b)) {
+        const err = b.find(x => x && x !== "");
+        return err || a;
+      }
+      return b && b !== "" ? b : a;
+    },
+    default: () => "",
+  }),
 });
 
 function createProjectId(): string {
@@ -69,11 +84,11 @@ export function createWorkflow() {
     .addEdge("retrieve_memory", "validate")
     .addEdge("validate", "planner")
     .addEdge("planner", "frontendNode")
-    .addEdge("planner", "contractsNode")
-    .addEdge("planner", "database")
-    .addEdge("contractsNode", "auditNode")
-    .addEdge("contractsNode", "backendNode")
-    .addEdge(["frontendNode", "auditNode", "backendNode", "database"], "build_join")
+    .addEdge("frontendNode", "contractsNode")
+    .addEdge("contractsNode", "database")
+    .addEdge("database", "auditNode")
+    .addEdge("auditNode", "backendNode")
+    .addEdge("backendNode", "build_join")
     .addEdge("build_join", "testing")
     .addConditionalEdges(
       "testing",

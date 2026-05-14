@@ -90,7 +90,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   await db.project.update({
     where: { id },
-    data: { status: "DEPLOYING" },
+    data: { status: "RUNNING" },
   });
 
   try {
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     await db.project.update({
       where: { id },
       data: {
-        status: "DEPLOYED",
+        status: "COMPLETED",
         deploymentUrl: deployResult.deploymentUrl,
         repoUrl: pushResult.repoUrl,
       },
