@@ -29,7 +29,12 @@ export const workflowWorker = new Worker(
     );
     return result;
   },
-  { connection },
+  {
+    connection,
+    stalledInterval: 5 * 60 * 1000,
+    maxStalledCount: 3,
+    lockDuration: 10 * 60 * 1000,
+  },
 );
 
 workflowWorker.on("completed", (job) => {
