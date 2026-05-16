@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import  { useState } from "react";
 import { Sidebar } from "@/components/Dashboard/Sidebar";
 import { TopNav } from "@/components/Dashboard/TopNav";
 import { ProjectsList } from "@/components/Dashboard/Projects/ProjectsList";
@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProjectsPage() {
   const [isCreating, setIsCreating] = useState(false);
-
   return (
     <main className="min-h-screen bg-[#050816] text-white flex overflow-hidden">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(124,58,237,0.05),transparent_50%),radial-gradient(circle_at_75%_75%,rgba(59,130,246,0.05),transparent_50%)] z-0" />
