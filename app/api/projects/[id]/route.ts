@@ -48,3 +48,34 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   return NextResponse.json({ project });
 }
+
+export async function DELETE(req: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
+
+  const token = extractBearerToken(req.headers.get("Authorization"));
+  if (!token) {
+    return NextResponse.json({ error: { code: "UNAUTHORIZED" } }, { status: 401 });
+  }
+
+  const session = await verifySession(token);
+  if (!session) {
+    return NextResponse.json({ error: { code: "INVALID_TOKEN" } }, { status: 401 });
+  }
+
+  const project = await db.project.findFirst({
+    where: { id, userId: session.userId },
+    select: { id: true },
+  });
+
+  if (!project) {
+    return NextResponse.json(
+      { error: { code: "NOT_FOUND", message: "Project not found" } },
+      { status: 404 },
+    );
+  }
+
+  await db.execution.deleteMany({ where: { projectId: id } });
+  await db.project.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
+}
