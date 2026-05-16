@@ -62,6 +62,16 @@ The platform autonomously:
 
 ---
 
+# Screenshots
+<img width="1456" height="829" alt="Screenshot 2026-05-16 at 7 14 05 PM" src="https://github.com/user-attachments/assets/e7bf3924-8347-4568-a83c-d469677f78bb" />
+
+<img width="1451" height="775" alt="Screenshot 2026-05-16 at 7 15 19 PM" src="https://github.com/user-attachments/assets/887149f2-6233-4d2d-8f5e-765434e0c6ec" />
+
+<img width="1470" height="842" alt="Screenshot 2026-05-16 at 7 18 54 PM" src="https://github.com/user-attachments/assets/54e7b9cb-79cb-4d83-a0dc-dd89e14b799b" />
+
+<img width="1672" height="941" alt="Screenshot 2026-05-16 at 09 51 59 PM" src="https://github.com/user-attachments/assets/55e1c84f-23eb-491e-be9e-cb7128a25939" />
+
+
 # Key Features
 
 ## AI DApp Generation
