@@ -50,7 +50,10 @@ export const Sidebar = () => {
 
       <nav className="flex-1 px-4 py-4 space-y-1">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.label}
