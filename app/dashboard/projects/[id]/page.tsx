@@ -37,8 +37,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 
-import Highlight, { defaultProps } from "prism-react-renderer";
-import theme from "prism-react-renderer/themes/vsDark";
+import { Highlight, themes } from "prism-react-renderer";
 
 interface AgentExecution {
   id: string;
@@ -745,7 +744,7 @@ export default function ProjectCockpit() {
                             <p className="text-sm text-slate-400 max-w-sm">
                               Your project is ready. Connect GitHub + Vercel in{" "}
                               <a
-                                href="/dashboard/integrations"
+                                href="/dashboard/settings"
                                 className="text-purple-400 hover:underline"
                               >
                                 Integrations
@@ -848,11 +847,10 @@ export default function ProjectCockpit() {
                         <div className="flex-1 overflow-auto p-4">
                           {fileContent ? (
                             <Highlight
-                              {...defaultProps}
-                              theme={theme}
+                              theme={themes.vsDark}
                               code={fileContent}
                               language={
-                                (selectedFile?.split(".").pop() || "") as any
+                                (selectedFile?.split(".").pop() || "") as string
                               }
                             >
                               {({
@@ -869,12 +867,12 @@ export default function ProjectCockpit() {
                                   {tokens.map((line, i) => (
                                     <div
                                       key={i}
-                                      {...getLineProps({ line, key: i })}
+                                      {...getLineProps({ line })}
                                     >
                                       {line.map((token, key) => (
                                         <span
                                           key={key}
-                                          {...getTokenProps({ token, key })}
+                                          {...getTokenProps({ token })}
                                         />
                                       ))}
                                     </div>

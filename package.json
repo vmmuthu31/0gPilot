@@ -56,12 +56,8 @@
     "viem": "^2.48.11",
     "wagmi": "^2.19.5",
     "zod": "^4.4.3",
-    "jszip": "^4.0.0"
-  },
-  "dependenciesMeta": {
-    "prism-react-renderer": {
-      "optional": false
-    }
+    "jszip": "^3.10.1",
+    "prism-react-renderer": "^2.4.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

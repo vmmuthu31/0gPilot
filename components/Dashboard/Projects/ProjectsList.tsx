@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type ProjectListItem = {
   id: string;
@@ -21,6 +22,8 @@ type ProjectListItem = {
   deploymentUrl?: string | null;
   repoUrl?: string | null;
 };
+
+type ProjectTab = "all" | "in_progress" | "deployed";
 
 const defaultColorForStatus = (status?: string) => {
   switch ((status || "").toUpperCase()) {
@@ -46,9 +49,17 @@ const defaultColorForStatus = (status?: string) => {
   }
 };
 
+const tabConfig: { id: ProjectTab; label: string }[] = [
+  { id: "all", label: "All Projects" },
+  { id: "in_progress", label: "In Progress" },
+  { id: "deployed", label: "Deployed" },
+];
+
 export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
+  const router = useRouter();
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<ProjectTab>("all");
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -76,6 +87,13 @@ export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
     fetchProjects();
   }, []);
 
+  const filtered = projects.filter((p) => {
+    const upper = (p.status ?? "").toUpperCase();
+    if (activeTab === "in_progress") return upper === "PENDING" || upper === "RUNNING" || upper === "DEPLOYING";
+    if (activeTab === "deployed") return upper === "DEPLOYED" || upper === "COMPLETED";
+    return true;
+  });
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-10">
@@ -95,30 +113,41 @@ export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
       </div>
 
       <div className="flex items-center gap-8 border-b border-white/5 mb-8 overflow-x-auto pb-px">
-        {["All Projects", "In Progress", "Deployed", "Templates"].map(
-          (tab, i) => (
-            <button
-              key={tab}
-              className={`text-sm font-bold pb-4 relative transition-colors ${
-                i === 0 ? "text-purple-400" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              {tab}
-              {i === 0 && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
-              )}
-            </button>
-          ),
-        )}
+        {tabConfig.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`text-sm font-bold pb-4 relative transition-colors ${
+              activeTab === tab.id ? "text-purple-400" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.id && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+            )}
+          </button>
+        ))}
+        <button
+          onClick={() => router.push("/dashboard/templates")}
+          className="text-sm font-bold pb-4 relative transition-colors text-slate-400 hover:text-white"
+        >
+          Templates
+        </button>
       </div>
 
       <div className="space-y-4">
         {loading ? (
           <div className="text-slate-400">Loading projects…</div>
-        ) : projects.length === 0 ? (
-          <div className="text-slate-400">No projects found.</div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <FileJson className="w-10 h-10 text-slate-600 mb-4" />
+            <p className="text-sm font-bold text-slate-400 mb-1">
+              {activeTab === "all" ? "No projects found" : `No ${tabConfig.find((t) => t.id === activeTab)?.label.toLowerCase()} projects`}
+            </p>
+            <p className="text-xs text-slate-600">Create a new project to get started.</p>
+          </div>
         ) : (
-          projects.map((project, i) => {
+          filtered.map((project, i) => {
             const name = project.prompt ?? project.id;
             const date = project.createdAt
               ? new Date(project.createdAt).toLocaleDateString()
