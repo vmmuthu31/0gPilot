@@ -21,6 +21,16 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
+function isRateLimitError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("429") ||
+    lower.includes("rate limit") ||
+    lower.includes("too many requests") ||
+    lower.includes("slow down")
+  );
+}
+
 export async function retryAgentResult<TData>(
   fn: () => Promise<AgentResult<TData>>,
   options?: AgentRetryOptions,
@@ -63,10 +73,16 @@ export async function retryAgentResult<TData>(
       return result;
     }
 
-    const waitMs = jitter ? jitterMs(interval) : interval;
-    await sleep(waitMs);
-    interval = Math.min(maxIntervalMs, Math.floor(interval * backoffFactor));
+    if (isRateLimitError(result.error.message ?? "")) {
+      console.warn(`[retry] Rate limit hit — waiting 65s before retry ${attempt}/${maxAttempts}`);
+      await sleep(65_000);
+    } else {
+      const waitMs = jitter ? jitterMs(interval) : interval;
+      await sleep(waitMs);
+      interval = Math.min(maxIntervalMs, Math.floor(interval * backoffFactor));
+    }
   }
 
   return await fn();
 }
+
