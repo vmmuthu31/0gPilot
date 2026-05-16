@@ -54,6 +54,7 @@ model Project {
   prompt      String
   framework   String?
   blockchain  String?
+  template    String?
   features    String[]
 
   status      ProjectStatus @default(PENDING)

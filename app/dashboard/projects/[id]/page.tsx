@@ -37,6 +37,9 @@ import {
   FlaskConical,
 } from "lucide-react";
 
+import Highlight, { defaultProps } from 'prism-react-renderer';
+import theme from 'prism-react-renderer/themes/vsDark';
+
 interface AgentExecution {
   id: string;
   node: string;
@@ -227,6 +230,62 @@ export default function ProjectCockpit() {
       setFileContent(data.content ?? "");
     } catch {
       setFileContent("// Error loading file");
+    }
+  };
+
+  const downloadFile = (filename: string) => {
+    const content = fileContents[filename] ?? fileContent;
+    const blob = new Blob([content ?? ""], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename.split("/").pop() ?? "file.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadProjectZip = async () => {
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      for (const path of files) {
+        const content = fileContents[path] ?? "";
+        zip.file(path, content);
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${projectId || "project"}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("ZIP download failed", err);
+      alert(
+        "Failed to create ZIP in browser. Try downloading files individually.",
+      );
+    }
+  };
+
+  const openInRemix = async (filename: string) => {
+    const content = fileContents[filename] ?? fileContent;
+    if (!content) return alert("No file content to open");
+
+    try {
+      await navigator.clipboard.writeText(content);
+      window.open("https://remix.ethereum.org", "_blank");
+      alert(
+        "Contract content copied to clipboard. Paste into Remix (Ctrl+V / Cmd+V).",
+      );
+    } catch (err) {
+      console.error("Failed to copy to clipboard", err);
+      window.open("https://remix.ethereum.org", "_blank");
     }
   };
 
@@ -596,6 +655,13 @@ export default function ProjectCockpit() {
               ))}
 
               <div className="ml-auto flex items-center gap-2 pr-2">
+                <button
+                  onClick={downloadProjectZip}
+                  className="px-3.5 py-2 rounded-xl border border-white/10 bg-[#0B1120] hover:bg-white/5 text-white text-xs font-bold transition-all flex items-center gap-2"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Download ZIP
+                </button>
                 {project?.deploymentUrl && activeTab === "preview" && (
                   <>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-300 font-mono max-w-xs truncate">
@@ -733,23 +799,71 @@ export default function ProjectCockpit() {
                           <span className="text-xs text-slate-300 font-mono">
                             {selectedFile}
                           </span>
-                          <button
-                            onClick={() => copyUrl(fileContent)}
-                            className="ml-auto p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
-                          >
-                            {copied ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
+                          <div className="ml-auto flex items-center gap-2">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(
+                                    fileContent || "",
+                                  );
+                                  setCopied(true);
+                                  setTimeout(() => setCopied(false), 2000);
+                                } catch {
+                                  alert("Copy failed");
+                                }
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                            >
+                              {copied ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+
+                            <button
+                              onClick={() => downloadFile(selectedFile!)}
+                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                            </button>
+
+                            {selectedFile?.endsWith(".sol") && (
+                              <button
+                                onClick={() => openInRemix(selectedFile)}
+                                className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </button>
                             )}
-                          </button>
+
+                            <button
+                              onClick={downloadProjectZip}
+                              className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-white transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex-1 overflow-auto">
-                          <pre className="p-6 text-xs font-mono text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {fileContent || (
-                              <span className="text-slate-600">Loading…</span>
-                            )}
-                          </pre>
+                        <div className="flex-1 overflow-auto p-4">
+                          {fileContent ? (
+                            <Highlight {...defaultProps} theme={theme} code={fileContent} language={(selectedFile?.split('.').pop()||'') as any}>
+                              {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                                <pre className={`${className} p-6 text-xs font-mono rounded-b-lg`} style={{ ...style, whiteSpace: 'pre' }}>
+                                  {tokens.map((line, i) => (
+                                    <div key={i} {...getLineProps({ line, key: i })}>
+                                      {line.map((token, key) => (
+                                        <span key={key} {...getTokenProps({ token, key })} />
+                                      ))}
+                                    </div>
+                                  ))}
+                                </pre>
+                              )}
+                            </Highlight>
+                          ) : (
+                            <div className="p-6 text-slate-600">Loading…</div>
+                          )}
+                        </div>
                         </div>
                       </>
                     ) : (

@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { WorkflowState } from "../state";
 
 export async function githubNode(
-  state: WorkflowState
+  state: WorkflowState,
 ): Promise<Partial<WorkflowState>> {
   try {
     await projectBuilderService.build({
@@ -15,6 +15,7 @@ export async function githubNode(
       backend: state.backend,
       contracts: state.contracts,
       tests: state.tests,
+      template: state.template,
     });
 
     if (state.error) {

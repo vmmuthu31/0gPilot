@@ -3,6 +3,8 @@ export interface WorkflowState {
 
   prompt: string;
 
+  template?: string;
+
   architecture?: string;
 
   frontend?: string;

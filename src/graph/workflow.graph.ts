@@ -24,6 +24,7 @@ import { WorkflowState } from "./state";
 const GraphState = Annotation.Root({
   projectId: Annotation<string>(),
   prompt: Annotation<string>(),
+  template: Annotation<string>(),
   architecture: Annotation<string>(),
   frontend: Annotation<string>(),
   contracts: Annotation<string>(),
@@ -44,7 +45,7 @@ const GraphState = Annotation.Root({
   error: Annotation<string>({
     reducer: (a: string, b: string | string[]) => {
       if (Array.isArray(b)) {
-        const err = b.find(x => x && x !== "");
+        const err = b.find((x) => x && x !== "");
         return err || a;
       }
       return b && b !== "" ? b : a;
@@ -106,17 +107,24 @@ export function createWorkflow() {
   return workflow.compile();
 }
 
-export async function executeWorkflow(prompt: string, projectId?: string) {
+export async function executeWorkflow(
+  prompt: string,
+  projectId?: string,
+  template?: string,
+) {
   const pId = projectId ?? createProjectId();
 
   try {
     const graph = createWorkflow();
 
     await db.project
-      .update({ where: { id: pId }, data: { status: "RUNNING" } })
+      .update({
+        where: { id: pId },
+        data: { status: "RUNNING", ...(template ? { template } : {}) },
+      })
       .catch(() => {});
 
-    const stream = await graph.stream({ projectId: pId, prompt });
+    const stream = await graph.stream({ projectId: pId, prompt, template });
 
     let finalState: Partial<WorkflowState> | null = null;
     let cachedUserId: string | null = null;
@@ -168,7 +176,8 @@ export async function executeWorkflow(prompt: string, projectId?: string) {
     return { success: true, result: finalState };
   } catch (error: unknown) {
     console.error(error);
-    const message = error instanceof Error ? error.message : "Workflow execution failed";
+    const message =
+      error instanceof Error ? error.message : "Workflow execution failed";
 
     await db.project
       .update({ where: { id: pId }, data: { status: "FAILED" } })

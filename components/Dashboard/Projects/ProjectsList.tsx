@@ -1,58 +1,91 @@
 "use client";
 
-import React from "react";
-import { 
-  Plus, 
-  Clock, 
-  CheckCircle2, 
+import React, { useEffect, useState } from "react";
+import {
+  Plus,
+  Clock,
+  CheckCircle2,
   FileJson,
-  MoreHorizontal
+  MoreHorizontal,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-const projects = [
-  {
-    name: "NFT Marketplace",
-    desc: "A full-featured NFT marketplace with minting, buying and selling.",
-    status: "Deployed",
-    date: "May 20, 2025",
-    stack: ["OG Chain Testnet", "Next.js", "TypeScript"],
-    color: "text-emerald-400",
-    bgColor: "bg-emerald-500/10",
-    borderColor: "border-emerald-500/20"
-  },
-  {
-    name: "Staking DApp",
-    desc: "Staking platform with rewards and lockup periods.",
-    status: "In Progress",
-    progress: 40,
-    stack: ["OG Chain Testnet", "Next.js", "TypeScript"],
-    color: "text-amber-400",
-    bgColor: "bg-amber-500/10",
-    borderColor: "border-amber-500/20"
-  },
-  {
-    name: "DAO Governance",
-    desc: "Decentralized governance system for DAOs.",
-    status: "Draft",
-    date: "May 18, 2025",
-    stack: ["OG Chain Testnet", "Next.js", "TypeScript"],
-    color: "text-slate-400",
-    bgColor: "bg-white/5",
-    borderColor: "border-white/10"
-  },
-];
+type ProjectListItem = {
+  id: string;
+  prompt?: string | null;
+  framework?: string | null;
+  blockchain?: string | null;
+  status?: string | null;
+  createdAt?: string | null;
+  deploymentUrl?: string | null;
+  repoUrl?: string | null;
+};
+
+const defaultColorForStatus = (status?: string) => {
+  switch ((status || "").toUpperCase()) {
+    case "DEPLOYED":
+      return {
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/10",
+        border: "border-emerald-500/20",
+      };
+    case "RUNNING":
+    case "PENDING":
+      return {
+        color: "text-amber-400",
+        bg: "bg-amber-500/10",
+        border: "border-amber-500/20",
+      };
+    default:
+      return {
+        color: "text-slate-400",
+        bg: "bg-white/5",
+        border: "border-white/10",
+      };
+  }
+};
 
 export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("og_jwt") : null;
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : ({} as HeadersInit);
+      try {
+        const res = await fetch("/api/projects", { headers });
+        if (!res.ok) {
+          setProjects([]);
+          return;
+        }
+        const data = await res.json();
+        setProjects(data.projects ?? []);
+      } catch (err) {
+        console.error("Failed to load projects", err);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-10">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2">My Projects</h1>
-          <p className="text-sm text-slate-400">Manage all your projects and deployments.</p>
+          <p className="text-sm text-slate-400">
+            Manage all your projects and deployments.
+          </p>
         </div>
-        <button 
+        <button
           onClick={onCreateNew}
           className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)]"
         >
@@ -62,70 +95,96 @@ export const ProjectsList = ({ onCreateNew }: { onCreateNew: () => void }) => {
       </div>
 
       <div className="flex items-center gap-8 border-b border-white/5 mb-8 overflow-x-auto pb-px">
-        {["All Projects", "In Progress", "Deployed", "Templates"].map((tab, i) => (
-          <button 
-            key={tab} 
-            className={`text-sm font-bold pb-4 relative transition-colors ${i === 0 ? "text-purple-400" : "text-slate-400 hover:text-white"}`}
-          >
-            {tab}
-            {i === 0 && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />}
-          </button>
-        ))}
+        {["All Projects", "In Progress", "Deployed", "Templates"].map(
+          (tab, i) => (
+            <button
+              key={tab}
+              className={`text-sm font-bold pb-4 relative transition-colors ${
+                i === 0 ? "text-purple-400" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {tab}
+              {i === 0 && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500" />
+              )}
+            </button>
+          ),
+        )}
       </div>
 
       <div className="space-y-4">
-        {projects.map((project, i) => {
-          const projectSlug = project.name.toLowerCase().replace(/\s+/g, '-');
-          return (
-            <Link href={`/dashboard/projects/${projectSlug}`} key={project.name}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="group bg-[#0B1120] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all flex items-center justify-between mb-4 block"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-purple-500/20">
-                    <FileJson className="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">{project.name}</h3>
-                    <p className="text-sm text-slate-500 mb-3">{project.desc}</p>
-                    <div className="flex items-center gap-3">
-                      {project.stack.map(s => (
-                        <span key={s} className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">
-                          {s}
-                        </span>
-                      ))}
+        {loading ? (
+          <div className="text-slate-400">Loading projects…</div>
+        ) : projects.length === 0 ? (
+          <div className="text-slate-400">No projects found.</div>
+        ) : (
+          projects.map((project, i) => {
+            const name = project.prompt ?? project.id;
+            const date = project.createdAt
+              ? new Date(project.createdAt).toLocaleDateString()
+              : "";
+            const stack = [
+              project.blockchain ?? "OG Chain",
+              project.framework ?? "Next.js",
+              "TypeScript",
+            ].filter(Boolean);
+            const colors = defaultColorForStatus(project.status ?? undefined);
+            return (
+              <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="group bg-[#0B1120] border border-white/10 rounded-2xl p-6 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all flex items-center justify-between mb-4 block"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-purple-500/20">
+                      <FileJson className="w-6 h-6 text-slate-400 group-hover:text-purple-400 transition-colors" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">
+                        {name}
+                      </h3>
+                      <p className="text-sm text-slate-500 mb-3">
+                        {project.repoUrl ? "Connected repo" : ""}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {stack.map((s) => (
+                          <span
+                            key={s}
+                            className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-12">
-                  <div className="text-right">
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold mb-2 ${project.bgColor} ${project.color} border ${project.borderColor}`}>
-                      {project.status === "Deployed" ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                      {project.status}
+                  <div className="flex items-center gap-12">
+                    <div className="text-right">
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold mb-2 ${colors.bg} ${colors.color} border ${colors.border}`}
+                      >
+                        {project.status &&
+                        project.status.toUpperCase() === "DEPLOYED" ? (
+                          <CheckCircle2 className="w-3 h-3" />
+                        ) : (
+                          <Clock className="w-3 h-3" />
+                        )}
+                        {project.status ?? "Unknown"}
+                      </div>
+                      <p className="text-[10px] text-slate-500">{date}</p>
                     </div>
-                    {project.progress ? (
-                       <div className="w-32">
-                          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-purple-500 rounded-full" style={{ width: `${project.progress}%` }} />
-                          </div>
-                          <span className="text-[10px] text-slate-500 mt-1 block">{project.progress}%</span>
-                       </div>
-                    ) : (
-                      <p className="text-[10px] text-slate-500">{project.date}</p>
-                    )}
+                    <button className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors">
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
                   </div>
-                  <button className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-white transition-colors">
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            </Link>
-          );
-        })}
+                </motion.div>
+              </Link>
+            );
+          })
+        )}
       </div>
     </div>
   );
