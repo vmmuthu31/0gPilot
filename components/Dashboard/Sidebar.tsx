@@ -7,7 +7,6 @@ import {
   LayoutTemplate,
   Users,
   Rocket,
-  Blocks,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -21,7 +20,6 @@ const menuItems = [
   { icon: LayoutTemplate, label: "Templates", href: "/dashboard/templates" },
   { icon: Users, label: "Agents", href: "/dashboard/agents" },
   { icon: Rocket, label: "Deployments", href: "/dashboard/deployments" },
-  { icon: Blocks, label: "Integrations", href: "/dashboard/integrations" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
 

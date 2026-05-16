@@ -37,8 +37,8 @@ import {
   FlaskConical,
 } from "lucide-react";
 
-import Highlight, { defaultProps } from 'prism-react-renderer';
-import theme from 'prism-react-renderer/themes/vsDark';
+import Highlight, { defaultProps } from "prism-react-renderer";
+import theme from "prism-react-renderer/themes/vsDark";
 
 interface AgentExecution {
   id: string;
@@ -847,13 +847,35 @@ export default function ProjectCockpit() {
                         </div>
                         <div className="flex-1 overflow-auto p-4">
                           {fileContent ? (
-                            <Highlight {...defaultProps} theme={theme} code={fileContent} language={(selectedFile?.split('.').pop()||'') as any}>
-                              {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                                <pre className={`${className} p-6 text-xs font-mono rounded-b-lg`} style={{ ...style, whiteSpace: 'pre' }}>
+                            <Highlight
+                              {...defaultProps}
+                              theme={theme}
+                              code={fileContent}
+                              language={
+                                (selectedFile?.split(".").pop() || "") as any
+                              }
+                            >
+                              {({
+                                className,
+                                style,
+                                tokens,
+                                getLineProps,
+                                getTokenProps,
+                              }) => (
+                                <pre
+                                  className={`${className} p-6 text-xs font-mono rounded-b-lg`}
+                                  style={{ ...style, whiteSpace: "pre" }}
+                                >
                                   {tokens.map((line, i) => (
-                                    <div key={i} {...getLineProps({ line, key: i })}>
+                                    <div
+                                      key={i}
+                                      {...getLineProps({ line, key: i })}
+                                    >
                                       {line.map((token, key) => (
-                                        <span key={key} {...getTokenProps({ token, key })} />
+                                        <span
+                                          key={key}
+                                          {...getTokenProps({ token, key })}
+                                        />
                                       ))}
                                     </div>
                                   ))}
@@ -863,7 +885,6 @@ export default function ProjectCockpit() {
                           ) : (
                             <div className="p-6 text-slate-600">Loading…</div>
                           )}
-                        </div>
                         </div>
                       </>
                     ) : (

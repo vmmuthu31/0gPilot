@@ -259,7 +259,7 @@ export const MainView = () => {
               {(error.includes("GITHUB_NOT_CONNECTED") ||
                 error.includes("VERCEL_NOT_CONNECTED")) && (
                 <a
-                  href="/dashboard/integrations"
+                  href="/dashboard/settings"
                   className="text-purple-400 hover:underline text-xs mt-1 inline-block"
                 >
                   Connect integrations →
