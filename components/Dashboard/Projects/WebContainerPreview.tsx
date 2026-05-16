@@ -15,10 +15,17 @@ import {
   Rocket,
   Wifi,
 } from "lucide-react";
+import {
+  deriveProjectStack,
+  getCurrentGenerationPhase,
+} from "@/src/lib/project-generation";
 
 interface Props {
   files: Record<string, string>;
   projectId: string;
+  template?: string | null;
+  framework?: string | null;
+  blockchain?: string | null;
 }
 
 type Phase =
@@ -87,7 +94,13 @@ function filesToWebContainerFS(
   return fs;
 }
 
-export function WebContainerPreview({ files, projectId }: Props) {
+export function WebContainerPreview({
+  files,
+  projectId,
+  template,
+  framework,
+  blockchain,
+}: Props) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +108,18 @@ export function WebContainerPreview({ files, projectId }: Props) {
   const xtermRef = useRef<XTerm | null>(null);
   const containerRef = useRef<WebContainer | null>(null);
   const startedRef = useRef(false);
+  const stack = deriveProjectStack({ template, framework, blockchain });
+  const currentPhase = getCurrentGenerationPhase({
+    template,
+    framework,
+    blockchain,
+    filesCount: Object.keys(files).length,
+    status: Object.keys(files).length > 0 || phase !== "idle" ? "RUNNING" : "PENDING",
+  });
+  const displayPhaseLabel =
+    stack.previewMode !== "web" && phase === "running"
+      ? "Stack aligned"
+      : PHASE_LABELS[phase];
 
   const writeTerminal = useCallback((text: string) => {
     xtermRef.current?.write(text);
@@ -105,6 +130,20 @@ export function WebContainerPreview({ files, projectId }: Props) {
     startedRef.current = true;
 
     try {
+      if (stack.previewMode !== "web") {
+        setPhase("running");
+        writeTerminal(
+          `\r\n\x1b[34m▶ ${stack.labels.initialization}\x1b[0m\r\n`,
+        );
+        writeTerminal(
+          `\x1b[33m▶ Live browser preview is disabled for this ${stack.labels.runtime} stack.\x1b[0m\r\n`,
+        );
+        writeTerminal(
+          "\x1b[37mUse Agent Logs and Code to follow generation progress for this project type.\x1b[0m\r\n",
+        );
+        return;
+      }
+
       setPhase("booting");
       writeTerminal("\r\n\x1b[35m▶ Booting WebContainer runtime…\x1b[0m\r\n");
 
@@ -157,7 +196,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
       setPhase("error");
       writeTerminal(`\r\n\x1b[31m✖ Error: ${msg}\x1b[0m\r\n`);
     }
-  }, [files, writeTerminal]);
+  }, [files, stack, writeTerminal]);
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -181,6 +220,19 @@ export function WebContainerPreview({ files, projectId }: Props) {
     xterm.write("\x1b[35m0GPilot WebContainer\x1b[0m\r\n");
     xterm.write("─────────────────────────────────\r\n");
 
+    if (stack.previewMode !== "web") {
+      xterm.write(
+        `\x1b[34m${stack.labels.initialization}\x1b[0m\r\n`,
+      );
+      xterm.write(
+        "\x1b[33mPreview is terminal-only for this stack. Follow Agent Logs for phase updates.\x1b[0m\r\n",
+      );
+      return () => {
+        xterm.dispose();
+        xtermRef.current = null;
+      };
+    }
+
     if (Object.keys(files).length > 0) {
       // Defer to avoid synchronous setState inside effect body
       const timer = setTimeout(() => startContainer(), 0);
@@ -197,17 +249,18 @@ export function WebContainerPreview({ files, projectId }: Props) {
       xterm.dispose();
       xtermRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [files, stack, startContainer]);
 
   useEffect(() => {
+    if (stack.previewMode !== "web") return;
     if (Object.keys(files).length > 0 && !startedRef.current) {
       startContainer();
     }
-  }, [files, startContainer]);
+  }, [files, stack, startContainer]);
 
   // Remount files when they change so the running container sees updates
   useEffect(() => {
+    if (stack.previewMode !== "web") return;
     if (!containerRef.current) return;
     if (!startedRef.current) return;
     try {
@@ -219,7 +272,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
     } catch {
       // ignore
     }
-  }, [files]);
+  }, [files, stack]);
 
   const restart = () => {
     startedRef.current = false;
@@ -229,6 +282,16 @@ export function WebContainerPreview({ files, projectId }: Props) {
     xtermRef.current?.clear();
     xtermRef.current?.write("\x1b[35m0GPilot WebContainer\x1b[0m\r\n");
     xtermRef.current?.write("─────────────────────────────────\r\n");
+    if (stack.previewMode !== "web") {
+      xtermRef.current?.write(
+        `\x1b[34m${stack.labels.initialization}\x1b[0m\r\n`,
+      );
+      xtermRef.current?.write(
+        "\x1b[33mPreview is terminal-only for this stack. Follow Agent Logs for phase updates.\x1b[0m\r\n",
+      );
+      setPhase("running");
+      return;
+    }
     startContainer();
   };
 
@@ -247,8 +310,13 @@ export function WebContainerPreview({ files, projectId }: Props) {
                 : "text-slate-400"
             }`}
           >
-            {PHASE_LABELS[phase]}
+            {displayPhaseLabel}
           </span>
+          {currentPhase && phase !== "ready" && (
+            <span className="text-[10px] text-slate-500">
+              {currentPhase.title}
+            </span>
+          )}
           {phase === "ready" && previewUrl && (
             <span className="text-[10px] text-slate-500 font-mono ml-1">
               {previewUrl}

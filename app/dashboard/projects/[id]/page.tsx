@@ -5,6 +5,11 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/Dashboard/Sidebar";
+import {
+  buildGenerationPhases,
+  deriveProjectStack,
+  getCurrentGenerationPhase,
+} from "@/src/lib/project-generation";
 
 const WebContainerPreview = dynamic(
   () =>
@@ -54,6 +59,7 @@ interface Project {
   prompt: string;
   framework: string | null;
   blockchain: string | null;
+  template?: string | null;
   status: string;
   repoUrl: string | null;
   deploymentUrl: string | null;
@@ -137,6 +143,39 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+const PHASE_STYLES = {
+  completed: {
+    icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
+    ring: "border-emerald-500/20 bg-emerald-500/5",
+    badge: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    label: "Completed",
+  },
+  running: {
+    icon: <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />,
+    ring: "border-blue-500/20 bg-blue-500/5",
+    badge: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    label: "Running",
+  },
+  failed: {
+    icon: <AlertCircle className="w-4 h-4 text-red-400" />,
+    ring: "border-red-500/20 bg-red-500/5",
+    badge: "text-red-400 bg-red-500/10 border-red-500/20",
+    label: "Failed",
+  },
+  skipped: {
+    icon: <ChevronRight className="w-4 h-4 text-amber-400" />,
+    ring: "border-amber-500/20 bg-amber-500/5",
+    badge: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    label: "Skipped",
+  },
+  pending: {
+    icon: <ChevronRight className="w-4 h-4 text-slate-500" />,
+    ring: "border-white/5 bg-[#0B1120]",
+    badge: "text-slate-400 bg-white/5 border-white/10",
+    label: "Pending",
+  },
+} as const;
+
 export default function ProjectCockpit() {
   const params = useParams();
   const projectId = params?.id as string;
@@ -154,6 +193,7 @@ export default function ProjectCockpit() {
   const [copied, setCopied] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const autoOpenedLogsRef = useRef(false);
 
   const getAuthHeader = useCallback((): HeadersInit => {
     const token =
@@ -173,10 +213,18 @@ export default function ProjectCockpit() {
       if (!res.ok) return;
       const data = await res.json();
       setProject(data.project);
+      if (
+        !autoOpenedLogsRef.current &&
+        ["PENDING", "RUNNING"].includes(data.project?.status) &&
+        activeTab === "sandbox"
+      ) {
+        autoOpenedLogsRef.current = true;
+        setActiveTab("logs");
+      }
     } catch {
       console.log("Failed to fetch project");
     }
-  }, [projectId, getAuthHeader]);
+  }, [projectId, getAuthHeader, activeTab]);
 
   const fetchFiles = useCallback(async () => {
     if (!projectId) return;
@@ -412,6 +460,32 @@ export default function ProjectCockpit() {
     project?.blockchain ?? "0G Chain",
     "TypeScript",
   ].filter(Boolean);
+  const stackProfile = deriveProjectStack({
+    prompt: project?.prompt,
+    template: project?.template,
+    framework: project?.framework,
+    blockchain: project?.blockchain,
+  });
+  const generationPhases = buildGenerationPhases({
+    prompt: project?.prompt,
+    template: project?.template,
+    framework: project?.framework,
+    blockchain: project?.blockchain,
+    status: project?.status,
+    filesCount: files.length,
+    executions: project?.executions ?? [],
+  });
+  const currentPhase = getCurrentGenerationPhase({
+    prompt: project?.prompt,
+    template: project?.template,
+    framework: project?.framework,
+    blockchain: project?.blockchain,
+    status: project?.status,
+    filesCount: files.length,
+    executions: project?.executions ?? [],
+  });
+  const isGenerationActive =
+    project?.status === "PENDING" || project?.status === "RUNNING";
 
   return (
     <main className="min-h-screen bg-[#050816] text-white flex overflow-hidden">
@@ -450,6 +524,17 @@ export default function ProjectCockpit() {
                   </span>
                 ))}
               </div>
+              {isGenerationActive && currentPhase && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+                  <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+                  <span className="text-white font-semibold">
+                    {currentPhase.title}
+                  </span>
+                  <span className="text-slate-500">
+                    {currentPhase.description}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
@@ -710,6 +795,9 @@ export default function ProjectCockpit() {
                     <WebContainerPreview
                       files={fileContents}
                       projectId={projectId}
+                      template={project?.template ?? null}
+                      framework={project?.framework ?? null}
+                      blockchain={project?.blockchain ?? null}
                     />
                   </motion.div>
                 )}
@@ -904,7 +992,7 @@ export default function ProjectCockpit() {
                     exit={{ opacity: 0 }}
                     className="w-full h-full overflow-y-auto p-6 space-y-3"
                   >
-                    {!project?.executions?.length ? (
+                    {!generationPhases.length ? (
                       <div className="flex items-center justify-center h-full text-slate-500 text-sm">
                         <div className="text-center">
                           <Terminal className="w-10 h-10 mx-auto mb-3 opacity-30" />
@@ -912,40 +1000,60 @@ export default function ProjectCockpit() {
                         </div>
                       </div>
                     ) : (
-                      project.executions.map((exec) => (
+                      generationPhases.map((phase) => {
+                        const phaseStyle = PHASE_STYLES[phase.state];
+                        const timestamp = phase.completedAt ?? phase.startedAt;
+
+                        return (
                         <div
-                          key={exec.id}
-                          className="bg-[#0B1120] border border-white/5 rounded-xl p-4"
+                          key={phase.id}
+                          className={`border rounded-2xl p-5 transition-colors ${phaseStyle.ring}`}
                         >
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center justify-between gap-4 mb-3">
                             <div className="flex items-center gap-2">
-                              {exec.status === "COMPLETED" ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                              ) : exec.status === "FAILED" ? (
-                                <AlertCircle className="w-4 h-4 text-red-400" />
-                              ) : (
-                                <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                              )}
-                              <span className="text-sm font-bold text-white capitalize">
-                                {exec.node.replace(/_/g, " ")} Agent
-                              </span>
+                              {phaseStyle.icon}
+                              <div>
+                                <div className="text-sm font-bold text-white">
+                                  {phase.title}
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">
+                                  {phase.description}
+                                </div>
+                              </div>
                             </div>
-                            <span className="text-[10px] text-slate-500 font-mono">
-                              {new Date(exec.startedAt).toLocaleTimeString()}
-                            </span>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span
+                                className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${phaseStyle.badge}`}
+                              >
+                                {phaseStyle.label}
+                              </span>
+                              {timestamp && (
+                                <span className="text-[10px] text-slate-500 font-mono">
+                                  {new Date(timestamp).toLocaleTimeString()}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          {exec.log && (
+                          {phase.log && (
                             <pre className="text-xs text-slate-400 font-mono leading-relaxed whitespace-pre-wrap bg-black/30 rounded-lg p-3 mt-2 max-h-40 overflow-y-auto">
-                              {exec.log}
+                              {phase.log}
                             </pre>
                           )}
-                          {exec.error && (
+                          {phase.error && (
                             <div className="mt-2 text-xs text-red-400 bg-red-500/10 rounded-lg p-3 font-mono">
-                              {exec.error}
+                              {phase.error}
+                            </div>
+                          )}
+                          {phase.state === "running" && !phase.log && (
+                            <div className="mt-2 text-xs text-slate-400 bg-black/20 rounded-lg p-3">
+                              {phase.title === stackProfile.labels.initialization
+                                ? "Scaffolding the project foundation and waiting for generated files to stream in."
+                                : "This phase is currently in progress."}
                             </div>
                           )}
                         </div>
-                      ))
+                        );
+                      })
                     )}
                   </motion.div>
                 )}

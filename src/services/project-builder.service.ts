@@ -1,6 +1,11 @@
 import path from "path";
 import fs from "fs/promises";
 import { emitWorkflowEvent } from "@/server/events/emitter";
+import { db } from "@/db";
+import {
+  deriveProjectStack,
+  type ProjectStackProfile,
+} from "@/src/lib/project-generation";
 
 export interface AgentOutputs {
   projectId: string;
@@ -24,6 +29,23 @@ const OUTPUT_BASE = path.join(process.cwd(), "generated");
 class ProjectBuilderService {
   async build(outputs: AgentOutputs): Promise<BuiltProject> {
     const projectDir = path.join(OUTPUT_BASE, outputs.projectId);
+    const projectMeta = await db.project
+      .findUnique({
+        where: { id: outputs.projectId },
+        select: {
+          prompt: true,
+          template: true,
+          framework: true,
+          blockchain: true,
+        },
+      })
+      .catch(() => null);
+    const stack = deriveProjectStack({
+      prompt: projectMeta?.prompt ?? outputs.prompt,
+      template: projectMeta?.template ?? outputs.template,
+      framework: projectMeta?.framework,
+      blockchain: projectMeta?.blockchain,
+    });
 
     await fs.mkdir(projectDir, { recursive: true });
 
@@ -39,14 +61,20 @@ class ProjectBuilderService {
         "tsx|ts|jsx|js|css|html",
       );
       for (const [filename, content] of Object.entries(frontendFiles)) {
-        const dest = `app/${filename}`;
+        const dest = this.resolveFrontendDestination(filename, stack);
         files[dest] = content;
         await this.writeFile(projectDir, dest, content);
       }
 
       if (Object.keys(frontendFiles).length === 0) {
-        files["app/page.tsx"] = outputs.frontend;
-        await this.writeFile(projectDir, "app/page.tsx", outputs.frontend);
+        const fallbackPath =
+          stack.runtime === "react-native"
+            ? "App.tsx"
+            : stack.runtime === "contracts"
+              ? "frontend/app/page.tsx"
+              : "app/page.tsx";
+        files[fallbackPath] = outputs.frontend;
+        await this.writeFile(projectDir, fallbackPath, outputs.frontend);
       }
     }
 
@@ -90,29 +118,20 @@ class ProjectBuilderService {
       await this.writeFile(projectDir, "tests/index.test.ts", outputs.tests);
     }
 
-    const packageJson = this.buildPackageJson(outputs.prompt);
-    files["package.json"] = JSON.stringify(packageJson, null, 2);
-    await this.writeFile(
-      projectDir,
-      "package.json",
-      JSON.stringify(packageJson, null, 2),
+    files["package.json"] = JSON.stringify(
+      this.buildBasePackageJson(outputs.prompt),
+      null,
+      2,
     );
 
-    const scaffoldFiles = this.buildScaffoldFiles();
-    // Merge template-specific scaffold files
-    const templateFiles = this.buildTemplateScaffold(outputs.template);
+    const scaffoldFiles = this.buildScaffoldFiles(stack);
     for (const [filename, content] of Object.entries(scaffoldFiles)) {
-      if (!files[filename]) {
-        files[filename] = content;
-        await this.writeFile(projectDir, filename, content);
-      }
-    }
-
-    for (const [filename, content] of Object.entries(templateFiles)) {
-      if (!files[filename]) {
-        files[filename] = content;
-        await this.writeFile(projectDir, filename, content);
-      }
+      const nextContent =
+        filename === "package.json"
+          ? this.mergePackageJson(files["package.json"], content)
+          : files[filename] ?? content;
+      files[filename] = nextContent;
+      await this.writeFile(projectDir, filename, nextContent);
     }
 
     return {
@@ -255,7 +274,7 @@ class ProjectBuilderService {
     return lines.join("\n");
   }
 
-  private buildPackageJson(prompt: string) {
+  private buildBasePackageJson(prompt: string) {
     const name = prompt
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, "")
@@ -268,42 +287,39 @@ class ProjectBuilderService {
       name: name || "generated-project",
       version: "0.1.0",
       private: true,
-      scripts: {
-        dev: "next dev",
-        build: "next build",
-        start: "next start",
-        lint: "next lint",
-      },
-      dependencies: {
-        next: "14.2.5",
-        react: "^18.3.1",
-        "react-dom": "^18.3.1",
-        "@rainbow-me/rainbowkit": "^2.1.3",
-        wagmi: "^2.10.5",
-        viem: "^2.13.6",
-        "@tanstack/react-query": "^5.40.0",
-        ethers: "^6.13.0",
-        "framer-motion": "^11.2.10",
-        "lucide-react": "^0.390.0",
-        clsx: "^2.1.1",
-        "tailwind-merge": "^2.3.0",
-        "class-variance-authority": "^0.7.0",
-      },
-      devDependencies: {
-        "@types/node": "^20",
-        "@types/react": "^18",
-        "@types/react-dom": "^18",
-        typescript: "^5",
-        tailwindcss: "^3.4.4",
-        autoprefixer: "^10.4.19",
-        postcss: "^8.4.38",
-        eslint: "^8",
-        "eslint-config-next": "14.2.5",
-      },
+      scripts: {},
+      dependencies: {},
+      devDependencies: {},
     };
   }
 
-  private buildScaffoldFiles(): Record<string, string> {
+  private buildScaffoldFiles(stack: ProjectStackProfile): Record<string, string> {
+    const files: Record<string, string> = {
+      ".gitignore": [
+        "node_modules/",
+        ".next/",
+        "dist/",
+        "generated/",
+        "*.log",
+      ].join("\n"),
+    };
+
+    if (stack.runtime === "nextjs") {
+      Object.assign(files, this.buildNextjsScaffold());
+    }
+
+    if (stack.runtime === "react-native") {
+      Object.assign(files, this.buildReactNativeScaffold());
+    }
+
+    if (stack.includeHardhat) {
+      Object.assign(files, this.buildHardhatScaffold());
+    }
+
+    return files;
+  }
+
+  private buildNextjsScaffold(): Record<string, string> {
     return {
       "next.config.js": [
         "/** @type {import('next').NextConfig} */",
@@ -436,37 +452,62 @@ class ProjectBuilderService {
 
       "next-env.d.ts":
         '/// <reference types="next" />\n/// <reference types="next/types/global" />',
-      ".gitignore": [
-        "node_modules/",
-        ".next/",
-        "dist/",
-        "generated/",
-        "*.log",
-      ].join("\n"),
+      "package.json": JSON.stringify(
+        {
+          scripts: {
+            dev: "next dev",
+            build: "next build",
+            start: "next start",
+            lint: "eslint .",
+          },
+          dependencies: {
+            next: "16.2.6",
+            react: "19.2.4",
+            "react-dom": "19.2.4",
+            "@rainbow-me/rainbowkit": "^2.2.11",
+            wagmi: "^2.19.5",
+            viem: "^2.48.11",
+            "@tanstack/react-query": "^5.100.10",
+            ethers: "^6.16.0",
+            "framer-motion": "^12.38.0",
+            "lucide-react": "^1.14.0",
+            clsx: "^2.1.1",
+            "tailwind-merge": "^3.6.0",
+            "class-variance-authority": "^0.7.1",
+          },
+          devDependencies: {
+            "@types/node": "^20",
+            "@types/react": "^19",
+            "@types/react-dom": "^19",
+            typescript: "^5",
+            tailwindcss: "^4",
+            "@tailwindcss/postcss": "^4",
+            eslint: "^9",
+            "eslint-config-next": "16.2.6",
+          },
+        },
+        null,
+        2,
+      ),
     };
   }
 
-  private buildTemplateScaffold(template?: string): Record<string, string> {
-    const t = (template || "").toLowerCase();
-    const files: Record<string, string> = {};
-
-    if (t === "solidity" || t === "contracts") {
-      files["hardhat.config.js"] = [
+  private buildHardhatScaffold(): Record<string, string> {
+    return {
+      "hardhat.config.js": [
         "require('@nomicfoundation/hardhat-toolbox');",
         "module.exports = {",
         "  solidity: '0.8.19',",
         "};",
-      ].join("\n");
-
-      files["contracts/Contract.sol"] = [
+      ].join("\n"),
+      "contracts/Contract.sol": [
         "// SPDX-License-Identifier: MIT",
         "pragma solidity ^0.8.19;",
         "\ncontract Contract {",
         '  string public name = "GeneratedContract";',
         "}",
-      ].join("\n");
-
-      files["scripts/deploy.js"] = [
+      ].join("\n"),
+      "scripts/deploy.js": [
         "async function main() {",
         "  const [deployer] = await ethers.getSigners();",
         "  console.log('Deploying contracts with account:', deployer.address);",
@@ -479,9 +520,8 @@ class ProjectBuilderService {
         "  console.error(error);",
         "  process.exitCode = 1;",
         "});",
-      ].join("\n");
-
-      files["test/Contract.test.js"] = [
+      ].join("\n"),
+      "test/Contract.test.js": [
         "const { expect } = require('chai');",
         "describe('Contract', function () {",
         "  it('has a name', async function () {",
@@ -490,9 +530,8 @@ class ProjectBuilderService {
         "    expect(await deployed.name()).to.equal('GeneratedContract');",
         "  });",
         "});",
-      ].join("\n");
-
-      files["README_SOLIDITY.md"] = [
+      ].join("\n"),
+      "README_SOLIDITY.md": [
         "# Solidity Project",
         "",
         "This project includes a minimal Hardhat setup with one example contract.",
@@ -503,31 +542,32 @@ class ProjectBuilderService {
         "npm install",
         "npx hardhat test",
         "```",
-      ].join("\n");
-
-      files[".env.example"] = [
+      ].join("\n"),
+      ".env.example": [
         "# RPC URL for deployment (Infura/Alchemy)",
         "# PROVIDER_URL=https://polygon-rpc.com",
-      ].join("\n");
-
-      files["package.json"] = JSON.stringify(
+      ].join("\n"),
+      "package.json": JSON.stringify(
         {
-          name: "generated-contracts",
-          version: "0.1.0",
-          private: true,
-          scripts: { test: "npx hardhat test" },
+          scripts: {
+            test: "npx hardhat test",
+            "contract:compile": "npx hardhat compile",
+            "contract:deploy": "npx hardhat run scripts/deploy.js",
+          },
           devDependencies: {
             hardhat: "^2.22.0",
-            "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+            "@nomicfoundation/hardhat-toolbox": "^5.0.0",
           },
         },
         null,
         2,
-      );
-    }
+      ),
+    };
+  }
 
-    if (t === "react-native" || t === "mobile") {
-      files["App.tsx"] = [
+  private buildReactNativeScaffold(): Record<string, string> {
+    return {
+      "App.tsx": [
         "import React from 'react';",
         "import { SafeAreaView, Text } from 'react-native';",
         "\nexport default function App() {",
@@ -537,33 +577,35 @@ class ProjectBuilderService {
         "    </SafeAreaView>",
         "  );",
         "}",
-      ].join("\n");
-
-      files["package.json"] = JSON.stringify(
+      ].join("\n"),
+      "package.json": JSON.stringify(
         {
-          name: "generated-react-native",
-          version: "0.1.0",
-          private: true,
-          scripts: { start: "expo start" },
-          dependencies: { react: "^18.2.0", "react-native": "^0.71.0" },
-        },
-        null,
-        2,
-      );
-
-      files["app.json"] = JSON.stringify(
-        {
-          expo: {
-            name: "Generated Mobile App",
-            slug: "generated-mobile-app",
-            sdkVersion: "48.0.0",
+          scripts: {
+            start: "expo start",
+            android: "expo start --android",
+            ios: "expo start --ios",
+          },
+          dependencies: {
+            expo: "^53.0.0",
+            react: "19.2.4",
+            "react-native": "0.79.5",
           },
         },
         null,
         2,
-      );
-
-      files["README_MOBILE.md"] = [
+      ),
+      "app.json": JSON.stringify(
+        {
+          expo: {
+            name: "Generated Mobile App",
+            slug: "generated-mobile-app",
+            sdkVersion: "53.0.0",
+          },
+        },
+        null,
+        2,
+      ),
+      "README_MOBILE.md": [
         "# React Native (Expo) Project",
         "",
         "This is a minimal Expo React Native starter generated by 0gPilot.",
@@ -573,18 +615,65 @@ class ProjectBuilderService {
         "npm install",
         "expo start",
         "```",
-      ].join("\n");
-
-      files["babel.config.js"] = [
+      ].join("\n"),
+      "babel.config.js": [
         "module.exports = function(api) {",
         "  api.cache(true);",
         "  return { presets: ['babel-preset-expo'] };",
         "};",
-      ].join("\n");
+      ].join("\n"),
+    };
+  }
+
+  private mergePackageJson(baseContent: string, patchContent: string): string {
+    const base = JSON.parse(baseContent) as Record<string, unknown>;
+    const patch = JSON.parse(patchContent) as Record<string, unknown>;
+
+    const merged = {
+      ...base,
+      ...patch,
+      scripts: {
+        ...(typeof base.scripts === "object" && base.scripts ? base.scripts : {}),
+        ...(typeof patch.scripts === "object" && patch.scripts ? patch.scripts : {}),
+      },
+      dependencies: {
+        ...(typeof base.dependencies === "object" && base.dependencies
+          ? base.dependencies
+          : {}),
+        ...(typeof patch.dependencies === "object" && patch.dependencies
+          ? patch.dependencies
+          : {}),
+      },
+      devDependencies: {
+        ...(typeof base.devDependencies === "object" && base.devDependencies
+          ? base.devDependencies
+          : {}),
+        ...(typeof patch.devDependencies === "object" && patch.devDependencies
+          ? patch.devDependencies
+          : {}),
+      },
+    };
+
+    return JSON.stringify(merged, null, 2);
+  }
+
+  private resolveFrontendDestination(
+    filename: string,
+    stack: ProjectStackProfile,
+  ): string {
+    if (filename.includes("/")) {
+      return filename;
     }
 
-    // Default for nextjs doesn't need extra template files here.
-    return files;
+    if (stack.runtime === "react-native") {
+      return filename === "App.tsx" ? filename : `src/${filename}`;
+    }
+
+    if (stack.runtime === "contracts") {
+      return `frontend/${filename}`;
+    }
+
+    return `app/${filename}`;
   }
 
   private async walkDir(base: string, current: string): Promise<string[]> {
