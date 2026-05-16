@@ -128,10 +128,15 @@ export async function executeWorkflow(
 
     let finalState: Partial<WorkflowState> | null = null;
     let cachedUserId: string | null = null;
+    let accumulatedError = "";
 
     for await (const chunk of stream) {
       const nodeName = Object.keys(chunk)[0];
       finalState = (chunk as Record<string, Partial<WorkflowState>>)[nodeName];
+
+      if (finalState?.error) {
+        accumulatedError = finalState.error;
+      }
 
       emitWorkflowEvent(pId, `NODE_COMPLETED:${nodeName}`, {
         status: finalState?.status || "Completed",
@@ -164,7 +169,7 @@ export async function executeWorkflow(
       }
     }
 
-    const finalStatus = finalState?.error ? "FAILED" : "COMPLETED";
+    const finalStatus = accumulatedError ? "FAILED" : "COMPLETED";
 
     await db.project
       .update({
