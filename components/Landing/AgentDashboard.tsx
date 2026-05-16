@@ -119,7 +119,7 @@ export const AgentDashboard = () => {
     };
 
     return () => sse.close();
-  }, [projectId]);
+  }, [projectId, token]);
 
   const handleFileClick = () => {
     fileInputRef.current?.click();

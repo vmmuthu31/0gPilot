@@ -25,7 +25,7 @@ import { useAuth } from "@/src/client/auth/AuthProvider";
 
 type ConnectionStatus = "idle" | "loading" | "success" | "error";
 type SettingsTab = "profile" | "integrations" | "preferences";
-type ThemeOption = "dark" | "light" | "system";
+type SettingsTab = "profile" | "integrations" | "preferences";
 
 interface IntegrationState {
   token: string;

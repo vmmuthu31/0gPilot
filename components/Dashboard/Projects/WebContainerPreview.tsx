@@ -216,7 +216,7 @@ export function WebContainerPreview({ files, projectId }: Props) {
       void containerRef.current.mount(
         fsTree as Parameters<WebContainer["mount"]>[0],
       );
-    } catch (err) {
+    } catch {
       // ignore
     }
   }, [files]);

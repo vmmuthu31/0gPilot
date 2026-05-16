@@ -16,7 +16,7 @@ const REGISTERED_AGENTS = [
   {
     id: "frontend",
     name: "Frontend Agent",
-    capability: "frontend",
+    capability: "frontendNode",
     description: "Generates Next.js + TailwindCSS UI components and pages.",
     status: "active",
     model: "Llama-3.3-70B-Instruct",
@@ -24,7 +24,7 @@ const REGISTERED_AGENTS = [
   {
     id: "contract",
     name: "Contract Agent",
-    capability: "contract",
+    capability: "contractsNode",
     description: "Writes audited Solidity smart contracts for 0G Chain.",
     status: "active",
     model: "Llama-3.3-70B-Instruct",
@@ -32,7 +32,7 @@ const REGISTERED_AGENTS = [
   {
     id: "audit",
     name: "Audit Agent",
-    capability: "audit",
+    capability: "auditNode",
     description: "Reviews contracts for security vulnerabilities and gas optimisations.",
     status: "active",
     model: "Llama-3.3-70B-Instruct",
@@ -40,7 +40,7 @@ const REGISTERED_AGENTS = [
   {
     id: "backend",
     name: "Backend Agent",
-    capability: "backend",
+    capability: "backendNode",
     description: "Scaffolds Node.js API routes, database schemas, and service layers.",
     status: "active",
     model: "Llama-3.3-70B-Instruct",
@@ -64,8 +64,24 @@ const REGISTERED_AGENTS = [
   {
     id: "deploy",
     name: "Deploy Agent",
-    capability: "deploy",
+    capability: "deployNode",
     description: "Compiles Solidity and deploys contracts to 0G Chain autonomously.",
+    status: "active",
+    model: "Llama-3.3-70B-Instruct",
+  },
+  {
+    id: "analytics",
+    name: "Analytics Agent",
+    capability: "analyticsNode",
+    description: "Performs on-chain data analysis and project metrics tracking.",
+    status: "active",
+    model: "Llama-3.3-70B-Instruct",
+  },
+  {
+    id: "memory",
+    name: "Memory Agent",
+    capability: "memory",
+    description: "Maintains long-term project context and cross-execution memory.",
     status: "active",
     model: "Llama-3.3-70B-Instruct",
   },

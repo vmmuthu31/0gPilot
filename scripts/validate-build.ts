@@ -9,7 +9,7 @@ async function run() {
     contracts: "",
     tests: "",
     template: "nextjs",
-  } as any;
+  } as Record<string, string>;
 
   console.log("Building project with id:", outputs.projectId);
   const res = await projectBuilderService.build(outputs);
