@@ -27,6 +27,13 @@ export interface BuiltProject {
 const OUTPUT_BASE = path.join(process.cwd(), "generated");
 
 class ProjectBuilderService {
+  async initializeScaffold(projectId: string, prompt: string): Promise<void> {
+    await this.build({
+      projectId,
+      prompt,
+    });
+  }
+
   async build(outputs: AgentOutputs): Promise<BuiltProject> {
     const projectDir = path.join(OUTPUT_BASE, outputs.projectId);
     const projectMeta = await db.project

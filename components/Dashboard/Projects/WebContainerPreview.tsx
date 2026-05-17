@@ -26,6 +26,10 @@ interface Props {
   template?: string | null;
   framework?: string | null;
   blockchain?: string | null;
+  activityFeed?: Array<{
+    id: string;
+    line: string;
+  }>;
 }
 
 type Phase =
@@ -100,6 +104,7 @@ export function WebContainerPreview({
   template,
   framework,
   blockchain,
+  activityFeed = [],
 }: Props) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -108,6 +113,7 @@ export function WebContainerPreview({
   const xtermRef = useRef<XTerm | null>(null);
   const containerRef = useRef<WebContainer | null>(null);
   const startedRef = useRef(false);
+  const renderedFeedIdsRef = useRef<Set<string>>(new Set());
   const stack = deriveProjectStack({ template, framework, blockchain });
   const currentPhase = getCurrentGenerationPhase({
     template,
@@ -199,6 +205,16 @@ export function WebContainerPreview({
   }, [files, stack, writeTerminal]);
 
   useEffect(() => {
+    if (!xtermRef.current) return;
+
+    for (const item of activityFeed) {
+      if (renderedFeedIdsRef.current.has(item.id)) continue;
+      renderedFeedIdsRef.current.add(item.id);
+      writeTerminal(`\x1b[36m${item.line}\x1b[0m\r\n`);
+    }
+  }, [activityFeed, writeTerminal]);
+
+  useEffect(() => {
     if (!terminalRef.current) return;
 
     const xterm = new XTerm({
@@ -276,6 +292,7 @@ export function WebContainerPreview({
 
   const restart = () => {
     startedRef.current = false;
+    renderedFeedIdsRef.current = new Set();
     setPhase("idle");
     setPreviewUrl(null);
     setError(null);

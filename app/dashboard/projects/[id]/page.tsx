@@ -54,6 +54,12 @@ interface AgentExecution {
   completedAt: string | null;
 }
 
+interface LiveActivityEvent {
+  id: string;
+  kind: "node" | "file" | "system";
+  line: string;
+}
+
 interface Project {
   id: string;
   prompt: string;
@@ -192,8 +198,10 @@ export default function ProjectCockpit() {
   const [deployError, setDeployError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
+  const [liveExecutions, setLiveExecutions] = useState<AgentExecution[]>([]);
+  const [activityFeed, setActivityFeed] = useState<LiveActivityEvent[]>([]);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const autoOpenedLogsRef = useRef(false);
+  const seenFileEventsRef = useRef<Set<string>>(new Set());
 
   const getAuthHeader = useCallback((): HeadersInit => {
     const token =
@@ -213,18 +221,10 @@ export default function ProjectCockpit() {
       if (!res.ok) return;
       const data = await res.json();
       setProject(data.project);
-      if (
-        !autoOpenedLogsRef.current &&
-        ["PENDING", "RUNNING"].includes(data.project?.status) &&
-        activeTab === "sandbox"
-      ) {
-        autoOpenedLogsRef.current = true;
-        setActiveTab("logs");
-      }
     } catch {
       console.log("Failed to fetch project");
     }
-  }, [projectId, getAuthHeader, activeTab]);
+  }, [projectId, getAuthHeader]);
 
   const fetchFiles = useCallback(async () => {
     if (!projectId) return;
@@ -396,9 +396,108 @@ export default function ProjectCockpit() {
 
         if (
           typeof data.status === "string" &&
+          data.status.startsWith("NODE_STARTED:")
+        ) {
+          const nodeName = data.status.replace("NODE_STARTED:", "");
+          const startedAt =
+            typeof data.payload?.startedAt === "string"
+              ? data.payload.startedAt
+              : new Date().toISOString();
+
+          setLiveExecutions((prev) => {
+            const rest = prev.filter((entry) => entry.node !== nodeName);
+            return [
+              ...rest,
+              {
+                id: `live-${nodeName}`,
+                node: nodeName,
+                status: "RUNNING",
+                log: null,
+                error: null,
+                startedAt,
+                completedAt: null,
+              },
+            ];
+          });
+
+          setActivityFeed((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-${nodeName}-start`,
+              kind: "node",
+              line: `$ starting ${nodeName}`,
+            },
+          ]);
+          return;
+        }
+
+        if (
+          typeof data.status === "string" &&
           data.status.startsWith("NODE_COMPLETED:")
         ) {
+          const nodeName = data.status.replace("NODE_COMPLETED:", "");
+          const completedAt = new Date().toISOString();
+
+          setLiveExecutions((prev) => {
+            const existing = prev.find((entry) => entry.node === nodeName);
+            const rest = prev.filter((entry) => entry.node !== nodeName);
+            return [
+              ...rest,
+              {
+                id: existing?.id ?? `live-${nodeName}`,
+                node: nodeName,
+                status: data.payload?.error ? "FAILED" : "COMPLETED",
+                log:
+                  typeof data.payload?.status === "string"
+                    ? data.payload.status
+                    : existing?.log ?? null,
+                error:
+                  typeof data.payload?.error === "string"
+                    ? data.payload.error
+                    : null,
+                startedAt: existing?.startedAt ?? completedAt,
+                completedAt,
+              },
+            ];
+          });
+
+          setActivityFeed((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-${nodeName}-done`,
+              kind: "node",
+              line: data.payload?.error
+                ? `✖ ${nodeName} failed`
+                : `✔ ${nodeName} completed`,
+            },
+          ]);
+
           fetchProject();
+          return;
+        }
+
+        if (data.status === "PROJECT_INIT_STARTED") {
+          setActivityFeed((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-init-start`,
+              kind: "system",
+              line: "$ initializing project scaffold",
+            },
+          ]);
+          return;
+        }
+
+        if (data.status === "PROJECT_INIT_COMPLETED") {
+          setActivityFeed((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-init-done`,
+              kind: "system",
+              line: "✔ scaffold ready",
+            },
+          ]);
+          fetchFiles();
           return;
         }
 
@@ -414,6 +513,18 @@ export default function ProjectCockpit() {
           const line = typeof payload.line === "string" ? payload.line : "";
 
           if (!filePath) return;
+
+          if (!seenFileEventsRef.current.has(filePath)) {
+            seenFileEventsRef.current.add(filePath);
+            setActivityFeed((prev) => [
+              ...prev,
+              {
+                id: `${Date.now()}-${filePath}`,
+                kind: "file",
+                line: `+ ${filePath}`,
+              },
+            ]);
+          }
 
           setFiles((prev) => {
             if (prev.includes(filePath)) return prev;
@@ -449,6 +560,22 @@ export default function ProjectCockpit() {
     };
   }, [project, projectId, jwt, fetchProject, fetchFiles]);
 
+  const executionsForUi = React.useMemo(() => {
+    const byNode = new Map<string, AgentExecution>();
+
+    for (const execution of project?.executions ?? []) {
+      byNode.set(execution.node, execution);
+    }
+
+    for (const execution of liveExecutions) {
+      byNode.set(execution.node, execution);
+    }
+
+    return Array.from(byNode.values()).sort((a, b) =>
+      a.startedAt.localeCompare(b.startedAt),
+    );
+  }, [project?.executions, liveExecutions]);
+
   const fileTree = buildFileTree(files);
 
   const toggleDir = (dir: string) => {
@@ -473,7 +600,7 @@ export default function ProjectCockpit() {
     blockchain: project?.blockchain,
     status: project?.status,
     filesCount: files.length,
-    executions: project?.executions ?? [],
+    executions: executionsForUi,
   });
   const currentPhase = getCurrentGenerationPhase({
     prompt: project?.prompt,
@@ -482,7 +609,7 @@ export default function ProjectCockpit() {
     blockchain: project?.blockchain,
     status: project?.status,
     filesCount: files.length,
-    executions: project?.executions ?? [],
+    executions: executionsForUi,
   });
   const isGenerationActive =
     project?.status === "PENDING" || project?.status === "RUNNING";
@@ -798,6 +925,7 @@ export default function ProjectCockpit() {
                       template={project?.template ?? null}
                       framework={project?.framework ?? null}
                       blockchain={project?.blockchain ?? null}
+                      activityFeed={activityFeed}
                     />
                   </motion.div>
                 )}

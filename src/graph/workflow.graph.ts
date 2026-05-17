@@ -1,6 +1,7 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 import { emitWorkflowEvent } from "@/server/events/emitter";
 import { db } from "@/db";
+import { projectBuilderService } from "@/services/project-builder.service";
 
 import { validateNode } from "./nodes/validate.node";
 import { plannerNode } from "./nodes/planner.node";
@@ -62,24 +63,98 @@ function createProjectId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+type WorkflowNodeHandler = (
+  state: WorkflowState,
+) => Promise<Partial<WorkflowState>>;
+
+function withLiveNodeTracking(
+  nodeName: string,
+  handler: WorkflowNodeHandler,
+): WorkflowNodeHandler {
+  return async (state: WorkflowState) => {
+    const projectId = state.projectId?.trim();
+
+    if (projectId) {
+      emitWorkflowEvent(projectId, `NODE_STARTED:${nodeName}`, {
+        status: "RUNNING",
+        startedAt: new Date().toISOString(),
+      });
+
+      const userId = (
+        await db.project
+          .findUnique({ where: { id: projectId }, select: { userId: true } })
+          .catch(() => null)
+      )?.userId;
+
+      if (userId) {
+        const updated = await db.execution
+          .updateMany({
+            where: {
+              projectId,
+              node: nodeName,
+            },
+            data: {
+              status: "RUNNING",
+              error: null,
+              completedAt: null,
+              log: null,
+            },
+          })
+          .catch(() => null);
+
+        if (!updated || updated.count === 0) {
+          await db.execution
+            .create({
+              data: {
+                projectId,
+                userId,
+                node: nodeName,
+                status: "RUNNING",
+                startedAt: new Date(),
+              },
+            })
+            .catch(() => {});
+        }
+      }
+    }
+
+    return handler(state);
+  };
+}
+
 export function createWorkflow() {
   const workflow = new StateGraph(GraphState)
-    .addNode("validate", validateNode)
-    .addNode("planner", plannerNode)
-    .addNode("frontendNode", frontendNode)
-    .addNode("contractsNode", contractNode)
-    .addNode("auditNode", auditNode)
-    .addNode("backendNode", backendNode)
-    .addNode("database", databaseNode)
-    .addNode("build_join", buildJoinNode)
-    .addNode("testing", testingNode)
-    .addNode("deployNode", deployNode)
-    .addNode("deployment_skipped", deploySkippedNode)
-    .addNode("github", githubNode)
-    .addNode("vercel", vercelNode)
-    .addNode("analyticsNode", analyticsNode)
-    .addNode("memory", memoryNode)
-    .addNode("retrieve_memory", retrieveMemoryNode)
+    .addNode("validate", withLiveNodeTracking("validate", validateNode))
+    .addNode("planner", withLiveNodeTracking("planner", plannerNode))
+    .addNode(
+      "frontendNode",
+      withLiveNodeTracking("frontendNode", frontendNode),
+    )
+    .addNode(
+      "contractsNode",
+      withLiveNodeTracking("contractsNode", contractNode),
+    )
+    .addNode("auditNode", withLiveNodeTracking("auditNode", auditNode))
+    .addNode("backendNode", withLiveNodeTracking("backendNode", backendNode))
+    .addNode("database", withLiveNodeTracking("database", databaseNode))
+    .addNode("build_join", withLiveNodeTracking("build_join", buildJoinNode))
+    .addNode("testing", withLiveNodeTracking("testing", testingNode))
+    .addNode("deployNode", withLiveNodeTracking("deployNode", deployNode))
+    .addNode(
+      "deployment_skipped",
+      withLiveNodeTracking("deployment_skipped", deploySkippedNode),
+    )
+    .addNode("github", withLiveNodeTracking("github", githubNode))
+    .addNode("vercel", withLiveNodeTracking("vercel", vercelNode))
+    .addNode(
+      "analyticsNode",
+      withLiveNodeTracking("analyticsNode", analyticsNode),
+    )
+    .addNode("memory", withLiveNodeTracking("memory", memoryNode))
+    .addNode(
+      "retrieve_memory",
+      withLiveNodeTracking("retrieve_memory", retrieveMemoryNode),
+    )
 
     .addEdge(START, "retrieve_memory")
     .addEdge("retrieve_memory", "validate")
@@ -124,6 +199,20 @@ export async function executeWorkflow(
       })
       .catch(() => {});
 
+    emitWorkflowEvent(pId, "PROJECT_INIT_STARTED", {
+      status: "RUNNING",
+      startedAt: new Date().toISOString(),
+    });
+
+    await projectBuilderService.initializeScaffold(pId, prompt).catch((error) => {
+      console.error("[Workflow] Initial scaffold failed:", error);
+    });
+
+    emitWorkflowEvent(pId, "PROJECT_INIT_COMPLETED", {
+      status: "COMPLETED",
+      completedAt: new Date().toISOString(),
+    });
+
     const stream = await graph.stream({ projectId: pId, prompt, template });
 
     let finalState: Partial<WorkflowState> | null = null;
@@ -154,11 +243,12 @@ export async function executeWorkflow(
 
       if (cachedUserId) {
         await db.execution
-          .create({
-            data: {
+          .updateMany({
+            where: {
               projectId: pId,
-              userId: cachedUserId,
               node: nodeName,
+            },
+            data: {
               status: finalState?.error ? "FAILED" : "COMPLETED",
               log: finalState?.status,
               error: finalState?.error,
