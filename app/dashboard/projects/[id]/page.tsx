@@ -200,8 +200,10 @@ export default function ProjectCockpit() {
   const [previewKey, setPreviewKey] = useState(0);
   const [liveExecutions, setLiveExecutions] = useState<AgentExecution[]>([]);
   const [activityFeed, setActivityFeed] = useState<LiveActivityEvent[]>([]);
+  const [workerStalled, setWorkerStalled] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const seenFileEventsRef = useRef<Set<string>>(new Set());
+  const receivedFirstEventRef = useRef(false);
 
   const getAuthHeader = useCallback((): HeadersInit => {
     const token =
@@ -390,7 +392,17 @@ export default function ProjectCockpit() {
 
     const es = new EventSource(sseUrl);
 
+    // If no SSE event arrives within 35s on a PENDING project, the worker
+    // is probably not running.
+    const stalledTimer = setTimeout(() => {
+      if (!receivedFirstEventRef.current) {
+        setWorkerStalled(true);
+      }
+    }, 35_000);
+
     es.onmessage = (e) => {
+      receivedFirstEventRef.current = true;
+      setWorkerStalled(false);
       try {
         const data = JSON.parse(e.data);
 
@@ -501,6 +513,24 @@ export default function ProjectCockpit() {
           return;
         }
 
+        if (data.status === "WORKFLOW_CONFIG_ERROR") {
+          const errMsg =
+            typeof data.payload?.error === "string"
+              ? data.payload.error
+              : "Compute service is not configured. Set ZERO_G_API_KEY and ZERO_G_API_URL in your .env file.";
+          setDeployError(errMsg);
+          setActivityFeed((prev) => [
+            ...prev,
+            {
+              id: `${Date.now()}-config-error`,
+              kind: "system",
+              line: `✖ Config error: ${errMsg}`,
+            },
+          ]);
+          fetchProject();
+          return;
+        }
+
         if (data.status === "COMPLETED" || data.status === "FAILED") {
           fetchProject();
           fetchFiles();
@@ -550,11 +580,15 @@ export default function ProjectCockpit() {
       }
     };
 
-    es.onerror = () => es.close();
+    es.onerror = () => {
+      // Don't close — EventSource auto-reconnects. The stalled timer and
+      // replay buffer handle catching up.
+    };
 
     const poll = setInterval(fetchProject, 5000);
 
     return () => {
+      clearTimeout(stalledTimer);
       es.close();
       clearInterval(poll);
     };
@@ -715,6 +749,23 @@ export default function ProjectCockpit() {
               )}
             </div>
           </div>
+
+          {workerStalled && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2"
+            >
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>
+                <strong>Worker not running.</strong> The generation queue is
+                processing no jobs. Start the worker in a second terminal:{" "}
+                <code className="font-mono bg-black/30 px-1 rounded">
+                  npm run dev:worker
+                </code>
+              </span>
+            </motion.div>
+          )}
 
           {deployError && (
             <motion.div

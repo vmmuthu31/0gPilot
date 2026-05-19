@@ -5,6 +5,8 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
+    "dev:worker": "tsx watch worker.ts",
+    "dev:all": "next dev & tsx watch worker.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
