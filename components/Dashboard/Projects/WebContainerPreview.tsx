@@ -168,9 +168,9 @@ export function WebContainerPreview({
       });
 
       setPhase("installing");
-      writeTerminal("\x1b[34m▶ Running bun install…\x1b[0m\r\n");
+      writeTerminal("\x1b[34m▶ Running npm install…\x1b[0m\r\n");
 
-      const installProc = await wc.spawn("bun", ["install"]);
+      const installProc = await wc.spawn("npm", ["install"]);
       installProc.output.pipeTo(
         new WritableStream({
           write(chunk) {
@@ -181,27 +181,14 @@ export function WebContainerPreview({
 
       const installExit = await installProc.exit;
       if (installExit !== 0) {
-        // bun not available — fall back to npm
-        writeTerminal("\x1b[33m▶ bun not found, falling back to npm install…\x1b[0m\r\n");
-        const fallbackProc = await wc.spawn("npm", ["install"]);
-        fallbackProc.output.pipeTo(
-          new WritableStream({
-            write(chunk) {
-              writeTerminal(chunk);
-            },
-          }),
-        );
-        const fallbackExit = await fallbackProc.exit;
-        if (fallbackExit !== 0) {
-          throw new Error(`npm install exited with code ${fallbackExit}`);
-        }
+        throw new Error(`npm install exited with code ${installExit}`);
       }
 
       writeTerminal("\r\n\x1b[32m✔ Dependencies installed\x1b[0m\r\n\r\n");
       setPhase("running");
       writeTerminal("\x1b[34m▶ Starting dev server…\x1b[0m\r\n");
 
-      const devProc = await wc.spawn("bun", ["run", "dev"]);
+      const devProc = await wc.spawn("npm", ["run", "dev"]);
       devProc.output.pipeTo(
         new WritableStream({
           write(chunk) {

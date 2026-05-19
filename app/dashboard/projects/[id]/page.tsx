@@ -204,6 +204,8 @@ export default function ProjectCockpit() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const seenFileEventsRef = useRef<Set<string>>(new Set());
   const receivedFirstEventRef = useRef(false);
+  // Prevents re-fetching all file contents on every SSE replay after reconnect
+  const filesInitializedRef = useRef(false);
 
   const getAuthHeader = useCallback((): HeadersInit => {
     const token =
@@ -378,13 +380,20 @@ export default function ProjectCockpit() {
     })();
   }, [fetchProject, fetchFiles]);
 
-  useEffect(() => {
-    if (!project || !projectId) return;
+  // Derived stable value — SSE effect only re-runs when STATUS changes,
+  // not on every 5s project poll that updates other fields.
+  const projectStatus = project?.status ?? null;
 
-    const isActive = ["PENDING", "RUNNING", "DEPLOYING"].includes(
-      project.status,
-    );
+  useEffect(() => {
+    if (!projectStatus || !projectId) return;
+
+    const isActive = ["PENDING", "RUNNING", "DEPLOYING"].includes(projectStatus);
     if (!isActive) return;
+
+    // Reset per-session refs when starting a fresh SSE session
+    filesInitializedRef.current = false;
+    seenFileEventsRef.current = new Set();
+    receivedFirstEventRef.current = false;
 
     const sseUrl = jwt
       ? `/api/stream?projectId=${projectId}&token=${encodeURIComponent(jwt)}`
@@ -509,7 +518,13 @@ export default function ProjectCockpit() {
               line: "✔ scaffold ready",
             },
           ]);
-          fetchFiles();
+          // Guard: only fetch files once per SSE session.  Without this,
+          // every reconnect replays PROJECT_INIT_COMPLETED from the buffer,
+          // causing a storm of 12+ parallel file API calls.
+          if (!filesInitializedRef.current) {
+            filesInitializedRef.current = true;
+            fetchFiles();
+          }
           return;
         }
 
@@ -592,7 +607,9 @@ export default function ProjectCockpit() {
       es.close();
       clearInterval(poll);
     };
-  }, [project, projectId, jwt, fetchProject, fetchFiles]);
+  // NOTE: `projectStatus` not `project` — prevents the SSE from closing and
+  // reopening on every 5s poll that updates non-status project fields.
+  }, [projectStatus, projectId, jwt, fetchProject, fetchFiles]);
 
   const executionsForUi = React.useMemo(() => {
     const byNode = new Map<string, AgentExecution>();
