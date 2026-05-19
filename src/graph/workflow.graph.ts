@@ -204,6 +204,29 @@ export async function executeWorkflow(
       startedAt: new Date().toISOString(),
     });
 
+    // Guard: ensure the compute service is configured before running agents.
+    if (!process.env.ZERO_G_API_KEY?.trim() || !process.env.ZERO_G_API_URL?.trim()) {
+      const missing = [
+        !process.env.ZERO_G_API_KEY?.trim() && "ZERO_G_API_KEY",
+        !process.env.ZERO_G_API_URL?.trim() && "ZERO_G_API_URL",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      const errMsg = `Compute service not configured — set ${missing} in your .env file`;
+
+      emitWorkflowEvent(pId, "WORKFLOW_CONFIG_ERROR", {
+        status: "FAILED",
+        error: errMsg,
+        completedAt: new Date().toISOString(),
+      });
+
+      await db.project
+        .update({ where: { id: pId }, data: { status: "FAILED" } })
+        .catch(() => {});
+
+      return { success: false, error: errMsg };
+    }
+
     await projectBuilderService.initializeScaffold(pId, prompt).catch((error) => {
       console.error("[Workflow] Initial scaffold failed:", error);
     });
