@@ -805,23 +805,10 @@ export default function ProjectCockpit() {
                 </div>
               ) : (
                 <>
-                  {(fileTree[""] ?? []).map((file) => (
-                    <button
-                      key={file}
-                      onClick={() => loadFileContent(file)}
-                      className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors text-left ${
-                        selectedFile === file
-                          ? "bg-purple-500/15 text-white border border-purple-500/20"
-                          : "text-slate-400 hover:text-white hover:bg-white/5"
-                      }`}
-                    >
-                      {getFileIcon(file)}
-                      <span className="truncate">{file}</span>
-                    </button>
-                  ))}
-
+                  {/* Folders first */}
                   {Object.entries(fileTree)
                     .filter(([dir]) => dir !== "")
+                    .sort(([a], [b]) => a.localeCompare(b))
                     .map(([dir, dirFiles]) => (
                       <div key={dir}>
                         <button
@@ -865,6 +852,22 @@ export default function ProjectCockpit() {
                         )}
                       </div>
                     ))}
+
+                  {/* Root-level files after folders */}
+                  {(fileTree[""] ?? []).sort((a, b) => a.localeCompare(b)).map((file) => (
+                    <button
+                      key={file}
+                      onClick={() => loadFileContent(file)}
+                      className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs transition-colors text-left ${
+                        selectedFile === file
+                          ? "bg-purple-500/15 text-white border border-purple-500/20"
+                          : "text-slate-400 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {getFileIcon(file)}
+                      <span className="truncate">{file}</span>
+                    </button>
+                  ))}
                 </>
               )}
             </div>
