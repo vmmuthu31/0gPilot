@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession, extractBearerToken } from "@/server/auth/session";
 import { db } from "@/db";
+import { cancelWorkflow } from "@/server/queue/jobs";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,10 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       { status: 404 },
     );
   }
+
+  // Cancel any queued / active BullMQ jobs before removing the DB record
+  // so the worker doesn't keep burning API calls on a deleted project.
+  await cancelWorkflow(id);
 
   await db.execution.deleteMany({ where: { projectId: id } });
   await db.project.delete({ where: { id } });

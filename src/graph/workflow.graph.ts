@@ -204,6 +204,16 @@ export async function executeWorkflow(
       startedAt: new Date().toISOString(),
     });
 
+    // Guard: bail out early if the project was deleted while this job was queued.
+    const projectExists = await db.project
+      .findUnique({ where: { id: pId }, select: { id: true } })
+      .catch(() => null);
+
+    if (!projectExists) {
+      console.warn(`[Workflow] Project ${pId} no longer exists — skipping execution.`);
+      return { success: false, error: "Project was deleted" };
+    }
+
     // Guard: ensure the compute service is configured before running agents.
     if (!process.env.ZERO_G_API_KEY?.trim() || !process.env.ZERO_G_API_URL?.trim()) {
       const missing = [
